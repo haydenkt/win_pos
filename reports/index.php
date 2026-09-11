@@ -61,6 +61,16 @@ include '../includes/sidebar.php';
         </a>
     </div>
 
+    <div class="col-md-6 col-xl-4">
+        <a href="/reports/profit.php" class="quick-action">
+            <i class="fa fa-chart-line"></i>
+            <span>
+                <strong>Monthly profit</strong>
+                <small>Revenue less expenses and paid labour</small>
+            </span>
+        </a>
+    </div>
+
 </div>
 
 <?php include '../includes/footer.php'; ?>

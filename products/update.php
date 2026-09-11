@@ -12,6 +12,7 @@ if(!isset($_SESSION['user'])){
 
 
 include "../config/database.php";
+require_once "../includes/audit.php";
 
 
 
@@ -20,6 +21,9 @@ if(isset($_POST['id'])){
 
 
 $id = intval($_POST['id']);
+
+$old_result = $conn->query("SELECT * FROM products WHERE id='$id' LIMIT 1");
+$old_product = $old_result ? $old_result->fetch_assoc() : null;
 
 
 
@@ -72,7 +76,21 @@ WHERE id='$id'
 
 
 
-mysqli_query($conn,$sql);
+if(mysqli_query($conn,$sql)){
+    $old_stock = (float) ($old_product['stock_qty'] ?? 0);
+    $difference = $stock_qty - $old_stock;
+    if(abs($difference) > 0.0001){
+        $history_type = $difference > 0 ? 'ADJUSTMENT IN' : 'ADJUSTMENT OUT';
+        $history_note = 'Manual product stock adjustment';
+        $source_type = 'PRODUCT';
+        $user_id = (int) ($_SESSION['user_id'] ?? 0);
+        $quantity = abs($difference);
+        $stmt = $conn->prepare('INSERT INTO stock_history (product_id,type,quantity,balance_after,note,source_type,source_id,user_id) VALUES (?,?,?,?,?,?,?,?)');
+        $stmt->bind_param('isddssii',$id,$history_type,$quantity,$stock_qty,$history_note,$source_type,$id,$user_id);
+        $stmt->execute();
+    }
+    auditLog($conn,'UPDATE','product',$id,'Updated product '.$name,$old_product,['name'=>$name,'stock_qty'=>$stock_qty]);
+}
 
 
 

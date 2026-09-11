@@ -12,6 +12,48 @@ if ($company_name === '') {
 
 $current_path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 
+$back_link = null;
+$back_routes = [
+    '/settings/company.php' => ['/settings/index.php', 'Back to Settings'],
+    '/settings/invoice.php' => ['/settings/index.php', 'Back to Settings'],
+    '/settings/system.php' => ['/settings/index.php', 'Back to Settings'],
+    '/settings/data_tools.php' => ['/settings/index.php', 'Back to Settings'],
+    '/reports/sales.php' => ['/reports/index.php', 'Back to Reports'],
+    '/reports/payments.php' => ['/reports/index.php', 'Back to Reports'],
+    '/reports/customers.php' => ['/reports/index.php', 'Back to Reports'],
+    '/reports/profit.php' => ['/reports/index.php', 'Back to Reports'],
+    '/factory_products/categories.php' => ['/factory_products/index.php', 'Back to Factory products'],
+    '/factory_products/material_type.php' => ['/factory_products/index.php', 'Back to Factory products'],
+];
+
+if (isset($back_routes[$current_path])) {
+    $back_link = $back_routes[$current_path];
+} else {
+    $module_back_routes = [
+        '/customers/' => ['/customers/index.php', 'Back to Customers'],
+        '/site_survey/measurements/' => ['/site_survey/index.php', 'Back to Site surveys'],
+        '/site_survey/' => ['/site_survey/index.php', 'Back to Site surveys'],
+        '/invoices/' => ['/invoices/index.php', 'Back to Invoices'],
+        '/orders/' => ['/orders/index.php', 'Back to Orders'],
+        '/quotations/' => ['/quotations/index.php', 'Back to Quotations'],
+        '/products/' => ['/products/index.php', 'Back to Products'],
+        '/glass/' => ['/glass/index.php', 'Back to Glass'],
+        '/payments/' => ['/payments/index.php', 'Back to Payments'],
+        '/labour/workers/' => ['/labour/workers/index.php', 'Back to Workers'],
+        '/labour/records/' => ['/labour/records/index.php', 'Back to Daily records'],
+        '/labour/transactions/' => ['/labour/transactions/index.php', 'Back to Transactions'],
+        '/settings/users/' => ['/settings/users/index.php', 'Back to Users'],
+        '/settings/roles/' => ['/settings/roles/index.php', 'Back to Roles'],
+    ];
+
+    foreach ($module_back_routes as $prefix => $target) {
+        if (str_starts_with($current_path, $prefix) && $current_path !== $target[0]) {
+            $back_link = $target;
+            break;
+        }
+    }
+}
+
 if (empty($page_title)) {
     $section = trim(explode('/', trim($current_path, '/'))[0] ?? '');
 
@@ -292,7 +334,7 @@ $user_name = trim((string) (
             </div>
         <?php } ?>
 
-        <?php if ($can_settings || $can_users) { ?>
+        <?php if ($can_settings || $can_users || $can_audit || $can_backup) { ?>
             <div class="nav-group">
                 <div class="nav-label menu-text">System</div>
 
@@ -359,7 +401,7 @@ $user_name = trim((string) (
 
 <main class="content">
     <header class="app-topbar">
-        <div>
+        <div class="topbar-context">
             <div class="topbar-eyebrow">Workspace</div>
             <div class="topbar-title"><?=htmlspecialchars($page_title ?? 'Dashboard');?></div>
         </div>
@@ -380,3 +422,9 @@ $user_name = trim((string) (
     </header>
 
     <div class="content-body">
+        <?php if ($back_link): ?>
+            <a class="content-back" href="<?=htmlspecialchars($back_link[0]);?>">
+                <i class="fa fa-arrow-left" aria-hidden="true"></i>
+                <span><?=htmlspecialchars($back_link[1]);?></span>
+            </a>
+        <?php endif; ?>

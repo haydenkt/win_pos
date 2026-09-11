@@ -1,0 +1,16 @@
+<?php
+session_start();if(!isset($_SESSION['user'])){header('Location:../index.php');exit;}
+require_once __DIR__.'/../config/database.php';require_once __DIR__.'/../includes/permissions.php';requirePermission('inventory_view');
+$search=trim($_GET['search']??'');$type=trim($_GET['type']??'');
+$sql='SELECT sh.*,p.name product_name,u.username FROM stock_history sh LEFT JOIN products p ON p.id=sh.product_id LEFT JOIN users u ON u.id=sh.user_id WHERE 1=1';$types='';$params=[];
+if($search!==''){$sql.=' AND (p.name LIKE ? OR sh.note LIKE ?)';$term='%'.$search.'%';$types.='ss';$params[]=$term;$params[]=$term;}
+if($type!==''){$sql.=' AND sh.type=?';$types.='s';$params[]=$type;}$sql.=' ORDER BY sh.id DESC LIMIT 500';
+$stmt=$conn->prepare($sql);if($types!=='')$stmt->bind_param($types,...$params);$stmt->execute();$rows=$stmt->get_result();$type_rows=$conn->query("SELECT DISTINCT type FROM stock_history WHERE type IS NOT NULL AND type<>'' ORDER BY type");
+$page_title='Stock movements';require_once __DIR__.'/../includes/header.php';require_once __DIR__.'/../includes/sidebar.php';
+?>
+<div class="page-hero"><div><div class="page-kicker">Inventory</div><h1 class="page-title">Stock movements</h1><p class="page-subtitle">A permanent history of sales, returns and manual stock changes.</p></div></div>
+<form class="card card-body mb-3" method="get"><div class="row g-2"><div class="col-md-7"><input name="search" class="form-control" value="<?=htmlspecialchars($search);?>" placeholder="Search product or note"></div><div class="col-md-3"><select name="type" class="form-select"><option value="">All movement types</option><?php while($t=$type_rows->fetch_assoc()):?><option <?=$type===$t['type']?'selected':'';?>><?=htmlspecialchars($t['type']);?></option><?php endwhile;?></select></div><div class="col-md-2"><button class="btn btn-primary w-100"><i class="fa fa-search"></i> Filter</button></div></div></form>
+<div class="card"><div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Date</th><th>Product</th><th>Movement</th><th class="text-end">Quantity</th><th class="text-end">Balance</th><th>Source / note</th><th>By</th></tr></thead><tbody>
+<?php if($rows->num_rows===0):?><tr><td colspan="7"><div class="empty-state">No stock movements found.</div></td></tr><?php endif;?>
+<?php while($r=$rows->fetch_assoc()):$out=in_array(strtoupper($r['type']),['OUT','SALE','RETURN UNDO','ADJUSTMENT OUT'],true);?><tr><td><?=date('d M Y H:i',strtotime($r['created_at']));?></td><td><strong><?=htmlspecialchars($r['product_name']?:'Product #'.$r['product_id']);?></strong></td><td><span class="badge <?=$out?'text-bg-danger':'text-bg-success';?>"><?=htmlspecialchars($r['type']);?></span></td><td class="text-end fw-bold <?=$out?'text-danger':'text-success';?>"><?=$out?'-':'+';?><?=number_format(abs((float)$r['quantity']),2);?></td><td class="text-end"><?=$r['balance_after']===null?'—':number_format((float)$r['balance_after'],2);?></td><td><?=htmlspecialchars($r['source_type']?:'—');?><?php if($r['note']):?><small class="d-block text-muted"><?=htmlspecialchars($r['note']);?></small><?php endif;?></td><td><?=htmlspecialchars($r['username']?:'—');?></td></tr><?php endwhile;?></tbody></table></div></div>
+<?php require_once __DIR__.'/../includes/footer.php';?>

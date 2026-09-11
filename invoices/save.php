@@ -13,6 +13,7 @@ if (!isset($_SESSION['user'])) {
 }
 
 include "../config/database.php";
+require_once "../includes/audit.php";
 
 $conn->begin_transaction();
 
@@ -1494,6 +1495,10 @@ if ($deposit > 0) {
             $stock_note =
                 "Invoice " . $invoice_no;
 
+            $stock_source_type = "INVOICE";
+            $stock_user_id = (int) ($_SESSION['user_id'] ?? 0);
+            $stock_balance = floatval($stock['stock_qty']) - $qty;
+
 
             $stmt =
                 $conn->prepare("
@@ -1504,12 +1509,20 @@ if ($deposit > 0) {
                         product_id,
                         type,
                         quantity,
-                        note
+                        balance_after,
+                        note,
+                        source_type,
+                        source_id,
+                        user_id
                     )
 
                     VALUES
 
                     (
+                        ?,
+                        ?,
+                        ?,
+                        ?,
                         ?,
                         ?,
                         ?,
@@ -1531,12 +1544,16 @@ if ($deposit > 0) {
 
             $stmt->bind_param(
 
-                "isis",
+                "isddssii",
 
                 $product_id,
                 $stock_type,
                 $qty,
-                $stock_note
+                $stock_balance,
+                $stock_note,
+                $stock_source_type,
+                $invoice_id,
+                $stock_user_id
 
             );
 
@@ -1612,6 +1629,7 @@ if ($deposit > 0) {
     // COMMIT
     // =================================
 
+    auditLog($conn,'CREATE','invoice',$invoice_id,'Created invoice '.$invoice_no,null,['grand_total'=>$grand_total,'customer_id'=>$customer_id]);
     $conn->commit();
 
 

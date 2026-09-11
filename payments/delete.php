@@ -16,6 +16,7 @@ if(!isset($_SESSION['user'])){
 
 
 include "../config/database.php";
+require_once "../includes/audit.php";
 
 
 
@@ -42,7 +43,7 @@ $id = intval($_GET['id']);
 
 $get=mysqli_query($conn,"
 
-SELECT invoice_id
+SELECT *
 
 FROM payments
 
@@ -78,6 +79,8 @@ if($payment){
     WHERE id='$id'
 
     ");
+
+    auditLog($conn,'DELETE','payment',$id,'Deleted payment #'.$id,$payment,null);
 
 
 

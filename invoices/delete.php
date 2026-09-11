@@ -11,6 +11,7 @@ if(!isset($_SESSION['user'])){
 
 
 include "../config/database.php";
+require_once "../includes/audit.php";
 
 
 
@@ -180,6 +181,7 @@ try{
 
 
 
+    auditLog($conn,'DELETE','invoice',$invoice_id,'Deleted invoice '.$invoice_no,$invoice,null);
     mysqli_commit($conn);
 
 

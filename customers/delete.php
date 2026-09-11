@@ -8,6 +8,7 @@ if(!isset($_SESSION['user'])){
 }
 
 include_once "../config/database.php";
+require_once "../includes/audit.php";
 
 
 if(!isset($_GET['id'])){
@@ -19,6 +20,11 @@ if(!isset($_GET['id'])){
 
 
 $id = $_GET['id'];
+
+$old_stmt = $conn->prepare('SELECT * FROM customers WHERE id=? LIMIT 1');
+$old_stmt->bind_param('i',$id);
+$old_stmt->execute();
+$old_customer = $old_stmt->get_result()->fetch_assoc();
 
 
 // Check customer orders first
@@ -67,6 +73,8 @@ $stmt->bind_param(
 
 
 if($stmt->execute()){
+
+    auditLog($conn,'DELETE','customer',$id,'Deleted customer '.($old_customer['name']??('#'.$id)),$old_customer,null);
 
     echo "
     <script>

@@ -10,6 +10,7 @@ if(!isset($_SESSION['user'])){
 }
 
 include '../../config/database.php';
+require_once '../../includes/audit.php';
 
 
 
@@ -333,6 +334,8 @@ if(!$stmt->execute()){
     die("Insert failed: ".$stmt->error);
 
 }
+
+auditLog($conn,'CREATE','labour_transaction',$conn->insert_id,'Added '.$type.' for '.$worker['name'],null,['amount'=>$amount,'date'=>$date]);
 
 
 

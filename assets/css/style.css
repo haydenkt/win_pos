@@ -262,6 +262,27 @@ a:hover {
     text-transform: uppercase;
 }
 
+.topbar-context {
+    min-width: 0;
+}
+
+.content-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    color: var(--primary);
+    font-size: .875rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.content-back:hover,
+.content-back:focus {
+    color: var(--primary-dark);
+    text-decoration: none;
+}
+
 .topbar-title {
     font-size: 1.12rem;
     font-weight: 750;

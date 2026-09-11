@@ -12,6 +12,7 @@ if(!isset($_SESSION['user'])){
 
 
 include "../config/database.php";
+require_once "../includes/audit.php";
 
 
 
@@ -155,6 +156,9 @@ NOW()
 )
 
 ");
+
+$payment_id = (int) $conn->insert_id;
+auditLog($conn,'CREATE','payment',$payment_id,'Added payment for invoice #'.$invoice_id,null,['amount'=>$amount,'date'=>$payment_date]);
 
 
 

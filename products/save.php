@@ -12,6 +12,7 @@ if(!isset($_SESSION['user'])){
 
 
 include "../config/database.php";
+require_once "../includes/audit.php";
 
 
 
@@ -88,7 +89,17 @@ VALUES
 
 
 
-mysqli_query($conn,$sql);
+if(mysqli_query($conn,$sql)){
+    $product_id = (int) $conn->insert_id;
+    $history_type = 'OPENING';
+    $history_note = 'Opening stock';
+    $source_type = 'PRODUCT';
+    $user_id = (int) ($_SESSION['user_id'] ?? 0);
+    $stmt = $conn->prepare('INSERT INTO stock_history (product_id,type,quantity,balance_after,note,source_type,source_id,user_id) VALUES (?,?,?,?,?,?,?,?)');
+    $stmt->bind_param('isddssii',$product_id,$history_type,$stock_qty,$stock_qty,$history_note,$source_type,$product_id,$user_id);
+    $stmt->execute();
+    auditLog($conn,'CREATE','product',$product_id,'Created product '.$name,null,['stock_qty'=>$stock_qty]);
+}
 
 
 

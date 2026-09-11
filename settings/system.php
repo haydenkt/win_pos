@@ -49,10 +49,6 @@ $theme_options = [
 <div class="container-fluid px-0">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
             <div>
-                <a href="index.php" class="text-decoration-none small d-inline-flex align-items-center gap-2 mb-2">
-                    <i class="fa fa-arrow-left"></i>
-                    Back to settings
-                </a>
                 <h1 class="page-title mb-1">System settings</h1>
                 <p class="page-subtitle mb-0">Choose how Version 2 looks across the application.</p>
             </div>

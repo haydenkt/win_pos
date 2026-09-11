@@ -270,21 +270,18 @@ try {
         throw new Exception('Order return update failed: ' . $stmt->error);
     }
 
-    if ($history_id > 0) {
-        $stmt = $conn->prepare("
-            DELETE FROM stock_history
-            WHERE id = ?
-        ");
-
-        if (!$stmt) {
-            throw new Exception('Stock history delete failed: ' . $conn->error);
-        }
-
-        $stmt->bind_param('i', $history_id);
-
-        if (!$stmt->execute()) {
-            throw new Exception('Stock history delete failed: ' . $stmt->error);
-        }
+    $undo_type = 'RETURN UNDO';
+    $undo_note = 'Undo returned inventory #' . $return_id;
+    $undo_balance = $current_stock - $returned_quantity;
+    $undo_source = 'RETURN';
+    $undo_user = (int) ($_SESSION['user_id'] ?? 0);
+    $stmt = $conn->prepare('INSERT INTO stock_history (product_id,type,quantity,balance_after,note,source_type,source_id,user_id) VALUES (?,?,?,?,?,?,?,?)');
+    if (!$stmt) {
+        throw new Exception('Stock history insert failed: ' . $conn->error);
+    }
+    $stmt->bind_param('isddssii', $product_id, $undo_type, $returned_quantity, $undo_balance, $undo_note, $undo_source, $return_id, $undo_user);
+    if (!$stmt->execute()) {
+        throw new Exception('Stock history insert failed: ' . $stmt->error);
     }
 
     $stmt = $conn->prepare("
@@ -317,4 +314,3 @@ catch (Throwable $error) {
 
 header('Location:returned.php');
 exit();
-
