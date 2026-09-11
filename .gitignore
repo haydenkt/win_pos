@@ -1,0 +1,12 @@
+# Database credentials
+config/config.php
+config/ca.pem
+
+# Upload files
+uploads/
+
+# OS files
+.DS_Store
+
+# Logs
+*.log

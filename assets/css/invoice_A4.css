@@ -1,0 +1,293 @@
+@page {
+
+    size: A4 portrait;
+    margin: 15mm;
+
+}
+
+
+* {
+
+    box-sizing:border-box;
+
+}
+
+
+body {
+
+    font-family: Arial, sans-serif;
+    color:#222;
+    font-size:14px;
+    margin:0;
+
+}
+
+
+.invoice {
+
+    width:100%;
+
+}
+
+
+
+/* HEADER */
+
+.header {
+
+    display:flex;
+    justify-content:space-between;
+    border-bottom:3px solid #1f4e79;
+    padding-bottom:15px;
+    margin-bottom:15px;
+
+}
+
+
+.logo {
+
+    width:100px;
+
+}
+
+
+.logo img {
+
+    width:90px;
+    height:90px;
+    object-fit:contain;
+
+}
+
+
+.logo-placeholder {
+
+    width:90px;
+    height:90px;
+    border:1px solid #777;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+}
+
+
+
+.company {
+
+    flex:1;
+    padding-left:15px;
+
+}
+
+
+.company h1 {
+
+    margin:0;
+    color:#1f4e79;
+    font-size:28px;
+
+}
+
+
+.company h3 {
+
+    margin:5px 0;
+    font-size:16px;
+
+}
+
+
+.company p {
+
+    margin:4px 0;
+
+}
+
+
+
+.invoice-title {
+
+    text-align:right;
+
+}
+
+
+.invoice-title h1 {
+
+    margin:0;
+    font-size:32px;
+    color:#1f4e79;
+
+}
+
+
+.invoice-title p {
+
+    margin:5px 0;
+
+}
+
+
+
+/* SECTION TITLE */
+
+.section-title {
+
+    background:#1f4e79;
+    color:white;
+    padding:8px;
+    font-weight:bold;
+    margin-top:15px;
+
+}
+
+
+
+/* TABLE */
+
+table {
+
+    width:100%;
+    border-collapse:collapse;
+
+}
+
+
+th {
+
+    background:#d9eaf7;
+    border:1px solid #555;
+    padding:8px;
+    text-align:center;
+
+}
+
+
+td {
+
+    border:1px solid #777;
+    padding:8px;
+
+}
+
+
+
+.items th {
+
+    font-size:13px;
+
+}
+
+
+.items td {
+
+    text-align:center;
+
+}
+
+
+.items td:nth-child(2){
+
+    text-align:left;
+
+}
+
+
+
+/* CUSTOMER */
+
+.customer td {
+
+    padding:8px;
+
+}
+
+
+
+/* PAYMENT */
+
+.payment-area {
+
+    width:45%;
+    margin-left:auto;
+    margin-top:20px;
+
+}
+
+
+
+.payment-area td {
+
+    padding:10px;
+
+}
+
+
+
+.payment-area td:last-child {
+
+    text-align:right;
+
+}
+
+
+
+.grand {
+
+    background:#d4edda;
+    font-weight:bold;
+
+}
+
+
+
+.balance {
+
+    background:#fff3cd;
+    font-weight:bold;
+
+}
+
+
+
+/* NOTES */
+
+.notes {
+
+    border:1px solid #777;
+    min-height:70px;
+    padding:10px;
+    line-height:22px;
+
+}
+
+
+
+/* FOOTER */
+
+.footer {
+
+    text-align:center;
+    margin-top:50px;
+    font-size:13px;
+    color:#555;
+
+}
+
+
+
+/* PRINT */
+
+@media print {
+
+
+    body {
+
+        -webkit-print-color-adjust:exact;
+        print-color-adjust:exact;
+
+    }
+
+
+}
