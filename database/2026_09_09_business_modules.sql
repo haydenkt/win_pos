@@ -59,7 +59,22 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     INDEX idx_audit_user (user_id)
 );
 
-INSERT IGNORE INTO permissions (permission_name) VALUES
-('expenses_view'), ('expenses_manage'),
-('quotations_view'), ('quotations_manage'),
-('inventory_manage'), ('audit_view'), ('backup_manage');
+INSERT INTO permissions (permission_name, description) VALUES
+('orders_view', 'View factory orders'),
+('orders_manage', 'Create and manage factory orders'),
+('quotations_view', 'View and print quotations'),
+('quotations_manage', 'Create quotations and convert them to orders or invoices'),
+('factory_view', 'View factory products, categories, glass and material types'),
+('factory_manage', 'Create and manage factory products and setup data'),
+('products_view', 'View inventory products'),
+('products_manage', 'Create and manage inventory products'),
+('inventory_view', 'View stock movements'),
+('inventory_manage', 'Manage stock quantities and movements'),
+('returned_inventory_view', 'View returned inventory'),
+('expenses_view', 'View expenses'),
+('expenses_manage', 'Create, edit and delete expenses'),
+('settings_view', 'View system and company settings'),
+('users_view', 'View users and roles'),
+('audit_view', 'View the audit log'),
+('backup_manage', 'Download backups and use data tools')
+ON DUPLICATE KEY UPDATE description=VALUES(description);

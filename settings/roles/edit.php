@@ -11,6 +11,9 @@ if(!isset($_SESSION['user'])){
 
 include "../../config/database.php";
 
+require_once __DIR__ . '/permission_catalog.php';
+ensureV2PermissionCatalog($conn);
+
 
 
 // ========================================
@@ -336,39 +339,7 @@ $permission_name = $permission['permission_name'];
 
 // Friendly name
 
-$display_name = match($permission_name){
-
-    'dashboard_view' => 'View Dashboard',
-
-    'customers_view' => 'View Customers',
-
-    'customers_manage' => 'Manage Customers',
-
-    'invoices_view' => 'View Invoices',
-
-    'invoices_manage' => 'Manage Invoices',
-
-    'payments_view' => 'View Payments',
-
-    'payments_manage' => 'Manage Payments',
-
-    'labour_view' => 'View Labour',
-
-    'labour_manage' => 'Manage Labour',
-
-    'site_survey_view' => 'View Site Survey',
-
-    'site_survey_manage' => 'Manage Site Survey',
-
-    'reports_view' => 'View Reports',
-
-    'settings_manage' => 'Manage Settings',
-
-    'users_manage' => 'Manage Users & Roles',
-
-    default => ucwords(str_replace('_',' ',$permission_name))
-
-};
+$display_name = v2PermissionDisplayName($permission_name);
 
 
 

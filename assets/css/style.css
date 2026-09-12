@@ -877,6 +877,9 @@ html[data-theme="dark"] .table {
     --bs-table-bg: var(--surface);
     --bs-table-color: var(--ink-800);
     --bs-table-border-color: var(--ink-100);
+    --bs-table-striped-color: var(--ink-800);
+    --bs-table-hover-color: var(--ink-900);
+    --bs-table-active-color: var(--ink-900);
 }
 
 html[data-theme="dark"] .table thead th,
@@ -888,6 +891,7 @@ html[data-theme="dark"] .table .table-dark th {
 
 html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) > * {
     --bs-table-accent-bg: rgba(255, 255, 255, .025);
+    color: var(--ink-800);
 }
 
 html[data-theme="dark"] .table-hover > tbody > tr:hover > * {

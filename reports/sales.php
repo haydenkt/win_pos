@@ -348,7 +348,7 @@ Reset
 
 <a
 
-href="export_sales_excel.php?from=<?=$from;?>&to=<?=$to;?>"
+href="export_sales_excel.php?from=<?=urlencode($from);?>&to=<?=urlencode($to);?>"
 
 class="btn btn-success">
 

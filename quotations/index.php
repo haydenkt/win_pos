@@ -44,7 +44,10 @@ require_once __DIR__.'/../includes/sidebar.php';
                     <td><?=$row['valid_until'] ? date('d M Y', strtotime($row['valid_until'])) : '—';?></td>
                     <td><span class="badge text-bg-secondary"><?=htmlspecialchars($row['status']);?></span></td>
                     <td class="text-end fw-bold"><?=number_format((float)$row['total'], 2);?></td>
-                    <td class="text-end"><a href="view.php?id=<?=$row['id'];?>" class="btn btn-sm btn-light">View</a></td>
+                    <td class="text-end text-nowrap">
+                        <a href="print.php?id=<?=$row['id'];?>" target="_blank" class="btn btn-sm btn-light" title="Print quotation"><i class="fa fa-print"></i></a>
+                        <a href="view.php?id=<?=$row['id'];?>" class="btn btn-sm btn-light">View</a>
+                    </td>
                 </tr>
             <?php endwhile; ?>
             </tbody>
