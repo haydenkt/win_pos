@@ -68,6 +68,8 @@ Roles & Permissions
 </h3>
 
 
+<div class="d-flex flex-wrap gap-2">
+
 <a href="add.php" class="btn btn-success">
 
 <i class="fa fa-plus"></i>
@@ -75,6 +77,8 @@ Roles & Permissions
 Add Role
 
 </a>
+
+</div>
 
 
 </div>

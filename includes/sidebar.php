@@ -18,6 +18,7 @@ $back_routes = [
     '/settings/invoice.php' => ['/settings/index.php', 'Back to Settings'],
     '/settings/system.php' => ['/settings/index.php', 'Back to Settings'],
     '/settings/data_tools.php' => ['/settings/index.php', 'Back to Settings'],
+    '/settings/roles/index.php' => ['/settings/users/index.php', 'Back to Users'],
     '/reports/sales.php' => ['/reports/index.php', 'Back to Reports'],
     '/reports/payments.php' => ['/reports/index.php', 'Back to Reports'],
     '/reports/customers.php' => ['/reports/index.php', 'Back to Reports'],

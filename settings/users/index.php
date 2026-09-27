@@ -71,6 +71,16 @@ Users
 </h3>
 
 
+<div class="d-flex flex-wrap gap-2">
+
+<a href="../roles/index.php" class="btn btn-primary">
+
+<i class="fa fa-user-shield"></i>
+
+Roles & Permissions
+
+</a>
+
 <a href="add.php" class="btn btn-success">
 
 <i class="fa fa-plus"></i>
@@ -78,6 +88,8 @@ Users
 Add User
 
 </a>
+
+</div>
 
 
 </div>

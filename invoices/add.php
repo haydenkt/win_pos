@@ -747,7 +747,7 @@ if ($glassTypes) {
                             name="discount"
                             id="discount"
                             class="form-control"
-                            value="0"
+                            value=""
                         >
 
                     </div>

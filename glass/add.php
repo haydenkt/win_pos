@@ -240,7 +240,7 @@ step="0.01"
 
 min="0"
 
-value="0"
+value="<?= htmlspecialchars((string) ($_POST['price_per_sqft'] ?? '')) ?>"
 
 required
 
