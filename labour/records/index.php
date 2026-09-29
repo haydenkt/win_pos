@@ -614,6 +614,8 @@ readonly>
 
 name="cash[]"
 
+step="500"
+
 class="form-control cash"
 
 value="<?=$cash?>"

@@ -9,8 +9,6 @@ if (!isset($_SESSION['user'])) {
 
 
 include_once "../config/database.php";
-include "../includes/header.php";
-include "../includes/sidebar.php";
 
 
 if (!isset($_GET['id'])) {
@@ -128,6 +126,10 @@ if ($_SERVER['REQUEST_METHOD']=="POST") {
 
 
 }
+
+
+include "../includes/header.php";
+include "../includes/sidebar.php";
 
 
 
@@ -252,7 +254,7 @@ name="price_per_sqft"
 
 class="form-control"
 
-step="0.01"
+step="500"
 
 value="<?= $glass['price_per_sqft'] ?>"
 

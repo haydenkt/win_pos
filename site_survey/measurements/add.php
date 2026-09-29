@@ -148,7 +148,7 @@ Width (mm)
 
 <input 
 type="number"
-step="0.01"
+step="0.5"
 name="width[]"
 class="form-control"
 required>
@@ -172,7 +172,7 @@ Height (mm)
 
 <input 
 type="number"
-step="0.01"
+step="0.5"
 name="height[]"
 class="form-control"
 required>
@@ -433,7 +433,7 @@ Width (mm)
 
 <input 
 type="number"
-step="0.01"
+step="0.5"
 name="width[]"
 class="form-control"
 required>
@@ -451,7 +451,7 @@ Height (mm)
 
 <input 
 type="number"
-step="0.01"
+step="0.5"
 name="height[]"
 class="form-control"
 required>

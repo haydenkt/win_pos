@@ -208,6 +208,8 @@ Daily Pay
 
 name="daily_rate"
 
+step="500"
+
 class="form-control"
 
 value="<?= $worker['daily_rate'] ?>"
@@ -236,6 +238,8 @@ Default Cash
 <input type="number"
 
 name="default_cash"
+
+step="500"
 
 class="form-control"
 
@@ -270,6 +274,8 @@ Default Saving
 <input type="number"
 
 name="default_saving"
+
+step="500"
 
 class="form-control"
 

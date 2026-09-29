@@ -156,9 +156,59 @@ try {
     );
 
 
-    $deposit = floatval(
-        $_POST['deposit'] ?? 0
+    $cash_payment = max(
+        0,
+        floatval(
+            $_POST['cash_payment']
+            ?? ($_POST['deposit'] ?? 0)
+        )
     );
+
+
+    $digital_payment = max(
+        0,
+        floatval(
+            $_POST['digital_payment'] ?? 0
+        )
+    );
+
+
+    $digital_method = trim(
+        (string) (
+            $_POST['digital_method']
+            ?? 'Mobile Payment'
+        )
+    );
+
+
+    $allowed_digital_methods = [
+        'Mobile Payment',
+        'Bank Transfer'
+    ];
+
+
+    if (!in_array(
+        $digital_method,
+        $allowed_digital_methods,
+        true
+    )) {
+
+        $digital_method =
+            'Mobile Payment';
+
+    }
+
+
+    $digital_reference = trim(
+        (string) (
+            $_POST['digital_reference'] ?? ''
+        )
+    );
+
+
+    $deposit =
+        $cash_payment
+        + $digital_payment;
 
 
     $invoice_status =
@@ -211,17 +261,11 @@ try {
     // DEPOSIT
     // =================================
 
-    if ($deposit < 0) {
+    if ($deposit > $grand_total + 0.001) {
 
-        $deposit = 0;
-
-    }
-
-
-    if ($deposit > $grand_total) {
-
-        $deposit =
-            $grand_total;
+        throw new Exception(
+            "Cash and digital payments together cannot be higher than the invoice total."
+        );
 
     }
 
@@ -459,22 +503,44 @@ if (!$stmt->execute()) {
 }
 
 // =================================
-// SAVE INITIAL DEPOSIT AS PAYMENT
+// SAVE INITIAL PAYMENTS
 // =================================
 
-if ($deposit > 0) {
+    $initial_payments = [];
+
+
+    if ($cash_payment > 0) {
+
+        $initial_payments[] = [
+            'amount' => $cash_payment,
+            'method' => 'Cash',
+            'reference' => '',
+            'note' =>
+                'Initial cash payment for invoice '
+                . $invoice_no
+        ];
+
+    }
+
+
+    if ($digital_payment > 0) {
+
+        $initial_payments[] = [
+            'amount' => $digital_payment,
+            'method' => $digital_method,
+            'reference' => $digital_reference,
+            'note' =>
+                'Initial digital payment for invoice '
+                . $invoice_no
+        ];
+
+    }
+
+
+if (!empty($initial_payments)) {
 
 
     $payment_type = "Deposit";
-
-    $payment_method = "Cash";
-
-    $reference_no = "";
-
-    $payment_note =
-        "Initial deposit for invoice "
-        . $invoice_no;
-
 
     $stmt = $conn->prepare("
 
@@ -514,34 +580,51 @@ if ($deposit > 0) {
     if (!$stmt) {
 
         throw new Exception(
-            "Deposit payment prepare failed: "
+            "Initial payment prepare failed: "
             . $conn->error
         );
 
     }
 
 
-    $stmt->bind_param(
+    foreach ($initial_payments as $initial_payment) {
 
-        "iidssss",
+        $payment_amount =
+            (float) $initial_payment['amount'];
 
-        $invoice_id,
-        $customer_id,
-        $deposit,
-        $payment_method,
-        $reference_no,
-        $payment_type,
-        $payment_note
+        $payment_method =
+            (string) $initial_payment['method'];
 
-    );
+        $reference_no =
+            (string) $initial_payment['reference'];
+
+        $payment_note =
+            (string) $initial_payment['note'];
 
 
-    if (!$stmt->execute()) {
+        $stmt->bind_param(
 
-        throw new Exception(
-            "Deposit payment failed: "
-            . $stmt->error
+            "iidssss",
+
+            $invoice_id,
+            $customer_id,
+            $payment_amount,
+            $payment_method,
+            $reference_no,
+            $payment_type,
+            $payment_note
+
         );
+
+
+        if (!$stmt->execute()) {
+
+            throw new Exception(
+                "Initial payment failed: "
+                . $stmt->error
+            );
+
+        }
 
     }
 
@@ -1636,6 +1719,18 @@ if ($deposit > 0) {
     echo "
 
     <script>
+
+        try {
+
+            window.localStorage.removeItem(
+                'win_pos_invoice_hold_v1'
+            );
+
+        } catch (error) {
+
+            // The invoice is already saved; storage cleanup is optional.
+
+        }
 
         alert('Invoice Saved Successfully');
 

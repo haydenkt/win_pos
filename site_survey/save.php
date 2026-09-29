@@ -154,7 +154,7 @@ else {
 
 $sql = "
 
-    INSERT INTO site_survey
+    INSERT INTO site_surveys
     (
         customer_id,
         survey_date,

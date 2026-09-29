@@ -236,7 +236,7 @@ name="price_per_sqft"
 
 class="form-control"
 
-step="0.01"
+step="500"
 
 min="0"
 

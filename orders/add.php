@@ -568,7 +568,7 @@ MANUAL
 
 <input type="number"
 
-step="0.01"
+step="0.5"
 
 name="width[]"
 
@@ -589,7 +589,7 @@ class="form-control width">
 
 <input type="number"
 
-step="0.01"
+step="0.5"
 
 name="height[]"
 
@@ -655,7 +655,7 @@ readonly>
 
 <input type="number"
 
-step="0.01"
+step="500"
 
 name="price[]"
 
@@ -677,7 +677,7 @@ class="form-control price">
 
 <input type="number"
 
-step="0.01"
+step="500"
 
 name="unit_price[]"
 
@@ -1349,7 +1349,7 @@ Discount
 
 <input type="number"
 
-step="0.01"
+step="500"
 
 name="discount"
 
@@ -1373,7 +1373,7 @@ Installation Cost
 
 <input type="number"
 
-step="0.01"
+step="500"
 
 name="installation_cost"
 
@@ -1397,7 +1397,7 @@ Deposit
 
 <input type="number"
 
-step="0.01"
+step="500"
 
 name="deposit"
 

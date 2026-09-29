@@ -619,9 +619,7 @@ if ($glassTypes) {
 <div class="card mt-3">
 
 
-    <div
-        class="card-header d-flex justify-content-between align-items-center"
-    >
+    <div class="card-header">
 
         <strong>
 
@@ -631,18 +629,6 @@ if ($glassTypes) {
 
         </strong>
 
-
-        <button
-            type="button"
-            class="btn btn-primary btn-sm"
-            id="addItem"
-        >
-
-            <i class="fa fa-plus"></i>
-
-            Add Item
-
-        </button>
 
     </div>
 
@@ -659,6 +645,23 @@ if ($glassTypes) {
 
 
         <div id="itemList"></div>
+
+
+        <div class="d-flex justify-content-end mt-3">
+
+            <button
+                type="button"
+                class="btn btn-primary"
+                id="addItem"
+            >
+
+                <i class="fa fa-plus"></i>
+
+                Add Item
+
+            </button>
+
+        </div>
 
 
     </div>
@@ -743,7 +746,7 @@ if ($glassTypes) {
                         <input
                             type="number"
                             min="0"
-                            step="0.01"
+                            step="500"
                             name="discount"
                             id="discount"
                             class="form-control"
@@ -774,7 +777,7 @@ if ($glassTypes) {
                         <input
                             type="number"
                             min="0"
-                            step="0.01"
+                            step="500"
                             name="installation_cost"
                             id="installation_cost"
                             class="form-control"
@@ -814,16 +817,16 @@ if ($glassTypes) {
                 </div>
 
 
-                <!-- DEPOSIT -->
+                <!-- CASH PAYMENT -->
 
                 <div class="row mb-2">
 
                     <label
                         class="col-6 col-form-label"
-                        for="deposit"
+                        for="cash_payment"
                     >
 
-                        Deposit
+                        Cash Paid
 
                     </label>
 
@@ -833,9 +836,9 @@ if ($glassTypes) {
                         <input
                             type="number"
                             min="0"
-                            step="0.01"
-                            name="deposit"
-                            id="deposit"
+                            step="500"
+                            name="cash_payment"
+                            id="cash_payment"
                             class="form-control"
                             value=""
                         >
@@ -843,6 +846,139 @@ if ($glassTypes) {
                     </div>
 
                 </div>
+
+
+                <!-- DIGITAL PAYMENT -->
+
+                <div class="row mb-2">
+
+                    <label
+                        class="col-6 col-form-label"
+                        for="digital_payment"
+                    >
+
+                        Digital Paid
+
+                    </label>
+
+
+                    <div class="col-6">
+
+                        <input
+                            type="number"
+                            min="0"
+                            step="500"
+                            name="digital_payment"
+                            id="digital_payment"
+                            class="form-control"
+                            value=""
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="row mb-2">
+
+                    <label
+                        class="col-6 col-form-label"
+                        for="digital_method"
+                    >
+
+                        Digital Method
+
+                    </label>
+
+
+                    <div class="col-6">
+
+                        <select
+                            name="digital_method"
+                            id="digital_method"
+                            class="form-select"
+                        >
+
+                            <option value="Mobile Payment">
+                                Mobile Payment
+                            </option>
+
+                            <option value="Bank Transfer">
+                                Bank Transfer
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row mb-2">
+
+                    <label
+                        class="col-6 col-form-label"
+                        for="digital_reference"
+                    >
+
+                        Reference No.
+
+                    </label>
+
+
+                    <div class="col-6">
+
+                        <input
+                            type="text"
+                            name="digital_reference"
+                            id="digital_reference"
+                            class="form-control"
+                            placeholder="Optional"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <!-- TOTAL PAID -->
+
+                <div class="row mb-2">
+
+                    <label class="col-6 col-form-label">
+
+                        Total Paid
+
+                    </label>
+
+
+                    <div class="col-6">
+
+                        <input
+                            type="text"
+                            id="total_paid"
+                            class="form-control"
+                            value="0.00"
+                            readonly
+                        >
+
+                        <input
+                            type="hidden"
+                            name="deposit"
+                            id="deposit"
+                            value="0"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="paymentSplitError"
+                    class="small text-danger text-end mb-2"
+                    aria-live="polite"
+                ></div>
 
 
                 <!-- BALANCE -->
@@ -886,20 +1022,43 @@ if ($glassTypes) {
 
 <!-- SAVE -->
 
-<div class="mt-3 mb-4 text-end">
+<div class="mt-3 mb-4">
+
+    <div
+        id="invoiceHoldStatus"
+        class="small text-muted text-end mb-2"
+        aria-live="polite"
+    ></div>
 
 
-    <button
-        type="submit"
-        class="btn btn-success btn-lg"
-        id="saveInvoice"
-    >
+    <div class="d-flex justify-content-end gap-2 flex-wrap">
 
-        <i class="fa fa-save"></i>
+        <button
+            type="button"
+            class="btn btn-warning btn-lg"
+            id="holdInvoice"
+        >
 
-        Save Invoice
+            <i class="fa fa-pause"></i>
 
-    </button>
+            Hold Invoice
+
+        </button>
+
+
+        <button
+            type="submit"
+            class="btn btn-success btn-lg"
+            id="saveInvoice"
+        >
+
+            <i class="fa fa-save"></i>
+
+            Save Invoice
+
+        </button>
+
+    </div>
 
 
 </div>
@@ -950,6 +1109,16 @@ const glassTypes =
 
 const itemList =
     document.getElementById('itemList');
+
+
+let productSearchId = 0;
+
+
+const invoiceDraftKey =
+    'win_pos_invoice_hold_v1';
+
+
+let invoiceDraftTimer = null;
 
 
 
@@ -1006,27 +1175,36 @@ function selectedValue(
    PRODUCT OPTIONS
 ========================================================= */
 
+function productsForType(type)
+{
+
+    if (type === 'ORDER') {
+
+        return factoryProducts;
+
+    }
+
+
+    if (type === 'SALE') {
+
+        return saleProducts;
+
+    }
+
+
+    return [];
+
+}
+
+
 function productOptions(
     type,
     selected = ''
 )
 {
 
-    let products = [];
-
-
-    if (type === 'ORDER') {
-
-        products =
-            factoryProducts;
-
-    }
-    else if (type === 'SALE') {
-
-        products =
-            saleProducts;
-
-    }
+    const products =
+        productsForType(type);
 
 
     let html =
@@ -1058,6 +1236,41 @@ function productOptions(
 
 
     return html;
+
+}
+
+
+function productSearchOptions(type)
+{
+
+    return productsForType(type)
+        .map(product => `
+
+            <option value="${escapeHtml(product.name)}"></option>
+
+        `)
+        .join('');
+
+}
+
+
+function selectedProductName(
+    type,
+    selected = ''
+)
+{
+
+    const product =
+        productsForType(type)
+            .find(item =>
+                String(item.id)
+                === String(selected)
+            );
+
+
+    return product
+        ? product.name
+        : '';
 
 }
 
@@ -1231,6 +1444,14 @@ function itemState(item)
 function commonCells(state)
 {
 
+    const searchListId =
+        `invoice-product-search-${++productSearchId}`;
+
+
+    const canSearchProducts =
+        productsForType(state.type).length > 0;
+
+
     return `
 
         <!-- TYPE -->
@@ -1292,9 +1513,38 @@ function commonCells(state)
 
         <td class="product-cell">
 
+            <input
+                type="search"
+                class="form-control product-search"
+                list="${searchListId}"
+                placeholder="${
+                    canSearchProducts
+                        ? 'Search product...'
+                        : 'Use custom name below'
+                }"
+                value="${escapeHtml(
+                    selectedProductName(
+                        state.type,
+                        state.product
+                    )
+                )}"
+                autocomplete="off"
+                ${canSearchProducts ? '' : 'disabled'}
+            >
+
+
+            <datalist id="${searchListId}">
+
+                ${productSearchOptions(state.type)}
+
+            </datalist>
+
+
             <select
                 name="product_id[]"
-                class="form-control product"
+                class="product visually-hidden"
+                tabindex="-1"
+                aria-hidden="true"
             >
 
                 ${productOptions(
@@ -1433,7 +1683,7 @@ function sqftCells(state)
             ${input(
                 'width',
                 state.width,
-                'min="0" step="0.01" required'
+                'min="0" step="0.5" required'
             )}
 
              <input
@@ -1452,7 +1702,7 @@ function sqftCells(state)
             ${input(
                 'height',
                 state.height,
-                'min="0" step="0.01" required'
+                'min="0" step="0.5" required'
             )}
 
             <input
@@ -1484,7 +1734,7 @@ function sqftCells(state)
             <input
                 type="number"
                 min="0"
-                step="0.01"
+                step="500"
                 class="form-control base-price"
                 value="${escapeHtml(
                     state.basePrice
@@ -1644,7 +1894,7 @@ function manualCells(state)
             ${input(
                 'price',
                 state.price || '',
-                'min="0" step="0.01" required'
+                'min="0" step="500" required'
             )}
 
         </td>
@@ -1702,13 +1952,6 @@ function renderItem(
                    align-items-center"
         >
 
-            <strong>
-
-                Item
-
-            </strong>
-
-
             <button
                 type="button"
                 class="btn btn-outline-danger btn-sm remove-item"
@@ -1719,6 +1962,13 @@ function renderItem(
                 Remove
 
             </button>
+
+
+            <strong class="item-number">
+
+                Item
+
+            </strong>
 
         </div>
 
@@ -1796,6 +2046,32 @@ function renderItem(
 
     calculateItem(item);
 
+    updateItemNumbers();
+
+}
+
+
+function updateItemNumbers()
+{
+
+    Array.from(itemList.children)
+        .forEach((item, index) => {
+
+            const itemNumber =
+                item.querySelector(
+                    '.item-number'
+                );
+
+
+            if (itemNumber) {
+
+                itemNumber.textContent =
+                    `Item ${index + 1}`;
+
+            }
+
+        });
+
 }
 
 
@@ -1816,6 +2092,8 @@ function bindItem(item)
 
                 item.remove();
 
+                updateItemNumbers();
+
 
                 if (
                     !itemList.children.length
@@ -1827,6 +2105,8 @@ function bindItem(item)
 
 
                 calculateTotals();
+
+                scheduleInvoiceDraftSave();
 
             }
         );
@@ -2041,6 +2321,68 @@ function bindItem(item)
 
         }
     );
+
+
+    const productSearch =
+        item.querySelector('.product-search');
+
+
+    if (productSearch) {
+
+        const syncProductSelection = () => {
+
+            const searchValue =
+                productSearch.value
+                    .trim()
+                    .toLocaleLowerCase();
+
+
+            const matchingOption =
+                Array.from(product.options)
+                    .find(option =>
+                        option.value
+                        &&
+                        option.textContent
+                            .trim()
+                            .toLocaleLowerCase()
+                            === searchValue
+                    );
+
+
+            const nextValue =
+                matchingOption
+                    ? matchingOption.value
+                    : '';
+
+
+            if (product.value !== nextValue) {
+
+                product.value = nextValue;
+
+                product.dispatchEvent(
+                    new Event(
+                        'change',
+                        { bubbles: true }
+                    )
+                );
+
+            }
+
+        };
+
+
+        productSearch.addEventListener(
+            'input',
+            syncProductSelection
+        );
+
+
+        productSearch.addEventListener(
+            'change',
+            syncProductSelection
+        );
+
+    }
 
 }
 
@@ -2353,22 +2695,37 @@ function calculateTotals()
         );
 
 
-    let deposit =
+    const cashPayment =
         number(
             document.getElementById(
-                'deposit'
+                'cash_payment'
             ).value
         );
 
 
-    if (
-        deposit > grandTotal
-    ) {
+    const digitalPayment =
+        number(
+            document.getElementById(
+                'digital_payment'
+            ).value
+        );
 
-        deposit =
-            grandTotal;
 
-    }
+    const deposit =
+        cashPayment
+        + digitalPayment;
+
+
+    const paymentIsTooHigh =
+        deposit > grandTotal;
+
+
+    document.getElementById(
+        'paymentSplitError'
+    ).textContent =
+        paymentIsTooHigh
+            ? 'Total paid cannot be higher than the grand total.'
+            : '';
 
 
     document.getElementById(
@@ -2384,11 +2741,25 @@ function calculateTotals()
 
 
     document.getElementById(
+        'total_paid'
+    ).value =
+        money(deposit);
+
+
+    document.getElementById(
+        'deposit'
+    ).value =
+        money(deposit);
+
+
+    document.getElementById(
         'balance'
     ).value =
         money(
-            grandTotal -
-            deposit
+            Math.max(
+                0,
+                grandTotal - deposit
+            )
         );
 
 }
@@ -2399,7 +2770,7 @@ function calculateTotals()
    ADD ITEM
 ========================================================= */
 
-function addItem()
+function addItem(state = null)
 {
 
     const item =
@@ -2415,7 +2786,7 @@ function addItem()
 
     renderItem(
         item,
-        {
+        state || {
 
             type: 'ORDER',
 
@@ -2446,6 +2817,362 @@ function addItem()
 
 
 /* =========================================================
+   HOLD INVOICE
+========================================================= */
+
+function invoiceDraftData()
+{
+
+    return {
+
+        version: 1,
+
+        savedAt: Date.now(),
+
+        customerType:
+            document.getElementById(
+                'customer_type'
+            ).value,
+
+        customerId:
+            document.getElementById(
+                'customer_id'
+            ).value,
+
+        newName:
+            document.getElementById(
+                'new_name'
+            ).value,
+
+        newPhone:
+            document.querySelector(
+                '[name="new_phone"]'
+            ).value,
+
+        newAddress:
+            document.querySelector(
+                '[name="new_address"]'
+            ).value,
+
+        invoiceStatus:
+            document.getElementById(
+                'invoice_status'
+            ).value,
+
+        notes:
+            document.getElementById(
+                'notes'
+            ).value,
+
+        discount:
+            document.getElementById(
+                'discount'
+            ).value,
+
+        cashPayment:
+            document.getElementById(
+                'cash_payment'
+            ).value,
+
+        digitalPayment:
+            document.getElementById(
+                'digital_payment'
+            ).value,
+
+        digitalMethod:
+            document.getElementById(
+                'digital_method'
+            ).value,
+
+        digitalReference:
+            document.getElementById(
+                'digital_reference'
+            ).value,
+
+        items:
+            Array.from(itemList.children)
+                .map(item => itemState(item))
+
+    };
+
+}
+
+
+function setInvoiceHoldStatus(message)
+{
+
+    document.getElementById(
+        'invoiceHoldStatus'
+    ).textContent = message;
+
+}
+
+
+function saveInvoiceDraft(announce = false)
+{
+
+    try {
+
+        const draft =
+            invoiceDraftData();
+
+
+        window.localStorage.setItem(
+            invoiceDraftKey,
+            JSON.stringify(draft)
+        );
+
+
+        const savedTime =
+            new Date(draft.savedAt)
+                .toLocaleTimeString(
+                    [],
+                    {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }
+                );
+
+
+        setInvoiceHoldStatus(
+            announce
+                ? `Invoice held at ${savedTime}. It is safe to refresh.`
+                : `Changes protected at ${savedTime}`
+        );
+
+    }
+    catch (error) {
+
+        setInvoiceHoldStatus(
+            'This browser could not hold the invoice.'
+        );
+
+    }
+
+}
+
+
+function scheduleInvoiceDraftSave()
+{
+
+    window.clearTimeout(
+        invoiceDraftTimer
+    );
+
+
+    invoiceDraftTimer =
+        window.setTimeout(
+            () => saveInvoiceDraft(false),
+            350
+        );
+
+}
+
+
+function currentProductState(state)
+{
+
+    const refreshedState =
+        { ...state };
+
+
+    const product =
+        productsForType(
+            refreshedState.type
+        )
+        .find(item =>
+            String(item.id)
+            === String(refreshedState.product)
+        );
+
+
+    if (!product) {
+
+        return refreshedState;
+
+    }
+
+
+    if (refreshedState.mode === 'SQFT') {
+
+        refreshedState.basePrice =
+            product.price;
+
+    }
+    else {
+
+        refreshedState.price =
+            product.price;
+
+    }
+
+
+    return refreshedState;
+
+}
+
+
+function restoreInvoiceDraft()
+{
+
+    let draft;
+
+
+    try {
+
+        draft = JSON.parse(
+            window.localStorage.getItem(
+                invoiceDraftKey
+            )
+        );
+
+    }
+    catch (error) {
+
+        try {
+
+            window.localStorage.removeItem(
+                invoiceDraftKey
+            );
+
+        }
+        catch (storageError) {
+
+            // Continue with a blank invoice when storage is unavailable.
+
+        }
+
+        return false;
+
+    }
+
+
+    if (
+        !draft
+        ||
+        draft.version !== 1
+        ||
+        !Array.isArray(draft.items)
+    ) {
+
+        return false;
+
+    }
+
+
+    if (draft.customerType === 'new') {
+
+        document.getElementById(
+            'newCustomerBtn'
+        ).click();
+
+    }
+
+
+    document.getElementById(
+        'customer_id'
+    ).value = draft.customerId || '';
+
+
+    document.getElementById(
+        'new_name'
+    ).value = draft.newName || '';
+
+
+    document.querySelector(
+        '[name="new_phone"]'
+    ).value = draft.newPhone || '';
+
+
+    document.querySelector(
+        '[name="new_address"]'
+    ).value = draft.newAddress || '';
+
+
+    document.getElementById(
+        'invoice_status'
+    ).value = draft.invoiceStatus || 'Confirmed';
+
+
+    document.getElementById(
+        'notes'
+    ).value = draft.notes || '';
+
+
+    document.getElementById(
+        'discount'
+    ).value = draft.discount || '';
+
+
+    document.getElementById(
+        'cash_payment'
+    ).value =
+        draft.cashPayment
+        ?? draft.deposit
+        ?? '';
+
+
+    document.getElementById(
+        'digital_payment'
+    ).value = draft.digitalPayment || '';
+
+
+    document.getElementById(
+        'digital_method'
+    ).value = draft.digitalMethod || 'Mobile Payment';
+
+
+    document.getElementById(
+        'digital_reference'
+    ).value = draft.digitalReference || '';
+
+
+    itemList.replaceChildren();
+
+
+    draft.items.forEach(state =>
+        addItem(
+            currentProductState(state)
+        )
+    );
+
+
+    if (!itemList.children.length) {
+
+        addItem();
+
+    }
+
+
+    calculateTotals();
+
+
+    const savedTime =
+        draft.savedAt
+            ? new Date(draft.savedAt)
+                .toLocaleTimeString(
+                    [],
+                    {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }
+                )
+            : '';
+
+
+    setInvoiceHoldStatus(
+        savedTime
+            ? `Held invoice restored from ${savedTime}. Product prices refreshed.`
+            : 'Held invoice restored. Product prices refreshed.'
+    );
+
+
+    return true;
+
+}
+
+
+/* =========================================================
    CUSTOMER SWITCH
 ========================================================= */
 
@@ -2455,7 +3182,13 @@ document
     )
     .addEventListener(
         'click',
-        addItem
+        () => {
+
+            addItem();
+
+            scheduleInvoiceDraftSave();
+
+        }
     );
 
 
@@ -2547,7 +3280,8 @@ document
 
 [
     'discount',
-    'deposit'
+    'cash_payment',
+    'digital_payment'
 ]
 .forEach(id => {
 
@@ -2561,6 +3295,66 @@ document
 });
 
 
+document
+    .getElementById(
+        'holdInvoice'
+    )
+    .addEventListener(
+        'click',
+        () => saveInvoiceDraft(true)
+    );
+
+
+document
+    .getElementById(
+        'invoiceForm'
+    )
+    .addEventListener(
+        'input',
+        scheduleInvoiceDraftSave
+    );
+
+
+document
+    .getElementById(
+        'invoiceForm'
+    )
+    .addEventListener(
+        'change',
+        scheduleInvoiceDraftSave
+    );
+
+
+[
+    'newCustomerBtn',
+    'existingCustomerBtn'
+]
+.forEach(id => {
+
+    document
+        .getElementById(id)
+        .addEventListener(
+            'click',
+            scheduleInvoiceDraftSave
+        );
+
+});
+
+
+window.addEventListener(
+    'beforeunload',
+    () => {
+
+        if (invoiceDraftTimer) {
+
+            saveInvoiceDraft(false);
+
+        }
+
+    }
+);
+
+
 /* =========================================================
    FORM VALIDATION
 ========================================================= */
@@ -2572,6 +3366,41 @@ document
     .addEventListener(
         'submit',
         event => {
+
+
+            const grandTotal =
+                number(
+                    document.getElementById(
+                        'grand_total'
+                    ).value
+                );
+
+
+            const totalPaid =
+                number(
+                    document.getElementById(
+                        'cash_payment'
+                    ).value
+                )
+                +
+                number(
+                    document.getElementById(
+                        'digital_payment'
+                    ).value
+                );
+
+
+            if (totalPaid > grandTotal) {
+
+                event.preventDefault();
+
+                alert(
+                    'Cash and digital payments together cannot be higher than the invoice total.'
+                );
+
+                return;
+
+            }
 
 
             const isNew =
@@ -2782,9 +3611,13 @@ document
    START
 ========================================================= */
 
-addItem();
+if (!restoreInvoiceDraft()) {
 
-calculateTotals();
+    addItem();
+
+    calculateTotals();
+
+}
 
 </script>
 

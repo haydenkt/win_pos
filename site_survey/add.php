@@ -96,6 +96,13 @@ include "../includes/sidebar.php";
     id="surveyForm"
 >
 
+<input
+    type="hidden"
+    name="customer_type"
+    id="customer_type"
+    value="old"
+>
+
 
 
 <!-- ========================================
@@ -147,6 +154,7 @@ include "../includes/sidebar.php";
                         name="customer_id"
                         id="customer_id"
                         class="form-select"
+                        required
                     >
 
 
@@ -504,6 +512,11 @@ function showNewCustomer()
 {
 
     document.getElementById(
+        "customer_type"
+    ).value = "new";
+
+
+    document.getElementById(
         "existingCustomerBox"
     ).style.display = "none";
 
@@ -548,6 +561,11 @@ function showNewCustomer()
 
 function showExistingCustomer()
 {
+
+    document.getElementById(
+        "customer_type"
+    ).value = "old";
+
 
     document.getElementById(
         "existingCustomerBox"

@@ -66,7 +66,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <div class="mb-3"><label class="form-label">Category</label><input name="category" class="form-control" list="expenseCategories" placeholder="Transport, utilities…" required></div>
                     <datalist id="expenseCategories"><option>Materials purchase</option><option>Transport</option><option>Utilities</option><option>Rent</option><option>Maintenance</option><option>Office</option><option>Other</option></datalist>
                     <div class="mb-3"><label class="form-label">Supplier</label><input name="supplier" class="form-control" placeholder="Optional"></div>
-                    <div class="mb-3"><label class="form-label">Amount</label><input type="number" min="0.01" step="0.01" name="amount" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Amount</label><input type="number" min="500" step="500" name="amount" class="form-control" required></div>
                     <div class="mb-3"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="3"></textarea></div>
                     <div class="mb-3"><label class="form-label">Receipt or photo</label><input type="file" name="receipt" class="form-control" accept="image/jpeg,image/png,image/webp,application/pdf"><div class="form-text">JPG, PNG, WebP or PDF up to 5 MB.</div></div>
                     <button class="btn btn-primary w-100"><i class="fa fa-plus"></i> Add expense</button>

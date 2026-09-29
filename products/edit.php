@@ -234,7 +234,7 @@ Purchase Price
 
 
 <input type="number"
-step="0.01"
+step="500"
 name="purchase_price"
 class="form-control"
 value="<?=$product['purchase_price'];?>">
@@ -255,7 +255,7 @@ Selling Price
 
 
 <input type="number"
-step="0.01"
+step="500"
 name="selling_price"
 class="form-control"
 value="<?=$product['selling_price'];?>">
@@ -285,7 +285,7 @@ Stock Quantity
 
 
 <input type="number"
-step="0.01"
+step="0.5"
 name="stock_qty"
 class="form-control"
 value="<?=$product['stock_qty'];?>">
@@ -306,7 +306,7 @@ Minimum Stock
 
 
 <input type="number"
-step="0.01"
+step="0.5"
 name="minimum_stock"
 class="form-control"
 value="<?=$product['minimum_stock'];?>">

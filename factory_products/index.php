@@ -11,6 +11,12 @@ include '../config/database.php';
 require_once '../includes/permissions.php';
 requirePermission('factory_view');
 
+$can_manage = hasPermission('factory_manage');
+
+if (empty($_SESSION['factory_product_csrf'])) {
+    $_SESSION['factory_product_csrf'] = bin2hex(random_bytes(32));
+}
+
 $page_title = 'Factory products';
 $search = trim((string) ($_GET['search'] ?? ''));
 $status = (string) ($_GET['status'] ?? 'All');
@@ -143,10 +149,20 @@ include '../includes/sidebar.php';
                                     <?=htmlspecialchars($product['status']);?>
                                 </span>
                             </td>
-                            <td class="text-end">
+                            <td class="text-end text-nowrap">
                                 <a href="edit.php?id=<?=(int) $product['id'];?>" class="btn btn-sm btn-outline-primary">
                                     <i class="fa fa-pen"></i> Edit
                                 </a>
+                                <?php if ($can_manage) { ?>
+                                    <form action="delete.php" method="post" class="d-inline"
+                                          onsubmit="return confirm('Delete this factory product? This cannot be undone.');">
+                                        <input type="hidden" name="csrf_token" value="<?=htmlspecialchars($_SESSION['factory_product_csrf']);?>">
+                                        <input type="hidden" name="id" value="<?=(int) $product['id'];?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fa fa-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                <?php } ?>
                             </td>
                         </tr>
                     <?php } ?>

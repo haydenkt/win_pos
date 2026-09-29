@@ -153,7 +153,7 @@ Purchase Price
 
 
 <input type="number"
-step="0.01"
+step="500"
 name="purchase_price"
 class="form-control"
 value="0">
@@ -174,7 +174,7 @@ Selling Price
 
 
 <input type="number"
-step="0.01"
+step="500"
 name="selling_price"
 class="form-control"
 value="0">
@@ -203,7 +203,7 @@ Stock Quantity
 
 
 <input type="number"
-step="0.01"
+step="0.5"
 name="stock_qty"
 class="form-control"
 value="0">
@@ -224,7 +224,7 @@ Minimum Stock
 
 
 <input type="number"
-step="0.01"
+step="0.5"
 name="minimum_stock"
 class="form-control"
 value="0">

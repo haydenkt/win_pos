@@ -162,7 +162,7 @@ Width (mm)
 
 <input 
 type="number"
-step="0.01"
+step="0.5"
 name="width"
 class="form-control"
 value="<?=$measurement['width'];?>"
@@ -187,7 +187,7 @@ Height (mm)
 
 <input 
 type="number"
-step="0.01"
+step="0.5"
 name="height"
 class="form-control"
 value="<?=$measurement['height'];?>"

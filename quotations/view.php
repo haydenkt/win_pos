@@ -108,7 +108,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label" for="paymentAmount">Payment amount</label>
-                        <input class="form-control" id="paymentAmount" name="payment_amount" type="number" min="0" max="<?=htmlspecialchars((string) $quote['total']);?>" step="0.01" value="0" required>
+                        <input class="form-control" id="paymentAmount" name="payment_amount" type="number" min="0" max="<?=htmlspecialchars((string) $quote['total']);?>" step="500" value="0" required>
                         <div class="d-flex flex-wrap gap-2 mt-2">
                             <button type="button" class="btn btn-sm btn-light payment-shortcut" data-amount="0">No payment</button>
                             <button type="button" class="btn btn-sm btn-light payment-shortcut" data-amount="<?=htmlspecialchars((string) round((float) $quote['total'] / 2, 2));?>">50%</button>

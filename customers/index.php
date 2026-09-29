@@ -60,6 +60,38 @@ $result = mysqli_query($conn,$sql);
 
 ?>
 
+<style>
+.customer-table {
+    min-width: 680px;
+}
+
+.customer-table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+.customer-action-column {
+    width: 140px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.customer-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 2.25rem);
+    justify-content: center;
+    gap: .4rem;
+}
+
+.customer-actions .btn {
+    display: inline-flex;
+    width: 2.25rem;
+    height: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+</style>
+
 
 
 <h2>
@@ -156,8 +188,9 @@ Add Customer
 <div class="card-body">
 
 
+<div class="table-responsive">
 
-<table class="table table-bordered table-striped">
+<table class="table table-bordered table-striped customer-table">
 
 
 <thead>
@@ -186,7 +219,7 @@ Address
 </th>
 
 
-<th width="150">
+<th class="customer-action-column">
 Action
 </th>
 
@@ -261,13 +294,16 @@ while($row=mysqli_fetch_assoc($result)){
 
 
 
-<td>
+<td class="customer-action-column">
 
+<div class="customer-actions">
 
 
 <a href="view.php?id=<?=$row['id'];?>"
 
-class="btn btn-info btn-sm">
+class="btn btn-info btn-sm"
+title="View customer"
+aria-label="View customer">
 
 <i class="fa fa-eye"></i>
 
@@ -277,7 +313,9 @@ class="btn btn-info btn-sm">
 
 <a href="edit.php?id=<?=$row['id'];?>"
 
-class="btn btn-warning btn-sm">
+class="btn btn-warning btn-sm"
+title="Edit customer"
+aria-label="Edit customer">
 
 <i class="fa fa-edit"></i>
 
@@ -290,11 +328,18 @@ class="btn btn-warning btn-sm">
 
 class="btn btn-danger btn-sm"
 
+title="Delete customer"
+
+aria-label="Delete customer"
+
 onclick="return confirm('Delete this customer?');">
 
 <i class="fa fa-trash"></i>
 
 </a>
+
+
+</div>
 
 
 
@@ -340,6 +385,8 @@ No customer found
 
 
 </table>
+
+</div>
 
 
 

@@ -467,7 +467,7 @@ while($p=mysqli_fetch_assoc($products)){
 
 <input type="number"
 
-step="0.01"
+step="0.5"
 
 name="width[]"
 
@@ -485,7 +485,7 @@ value="<?=$item['width'];?>">
 
 <input type="number"
 
-step="0.01"
+step="0.5"
 
 name="height[]"
 
@@ -585,11 +585,11 @@ MANUAL
 </td>
 
 <td>
-<input type="number" step="0.01" min="0" name="price[]" class="form-control price-per-sqft" value="<?=htmlspecialchars((string) $item['price_per_sqft']);?>">
+<input type="number" step="500" min="0" name="price[]" class="form-control price-per-sqft" value="<?=htmlspecialchars((string) $item['price_per_sqft']);?>">
 </td>
 
 <td>
-<input type="number" step="0.01" min="0" name="unit_price[]" class="form-control unit-price" value="<?=htmlspecialchars((string) $item['unit_price']);?>">
+<input type="number" step="500" min="0" name="unit_price[]" class="form-control unit-price" value="<?=htmlspecialchars((string) $item['unit_price']);?>">
 </td>
 
 <td>

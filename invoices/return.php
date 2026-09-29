@@ -643,7 +643,7 @@ type="number"
 name="cost_price[]"
 class="form-control"
 min="0"
-step="0.01"
+step="500"
 value="0"
 >
 
@@ -863,7 +863,7 @@ min="0"
 
 max="<?=$remaining_qty;?>"
 
-step="0.01"
+step="0.5"
 
 value="0"
 
