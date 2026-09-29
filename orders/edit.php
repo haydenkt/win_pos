@@ -134,6 +134,7 @@ $items=mysqli_query($conn,"
 
 SELECT
     order_items.*,
+    factory_products.id AS current_factory_product_id,
     factory_products.default_price AS product_default_price,
     (
         SELECT invoice_items.price
@@ -455,6 +456,12 @@ $item_total =
         ? (float) ($item['sqft'] ?? 0) * $price_per_sqft
         : (float) ($item['quantity'] ?? 0) * $unit_price;
 
+$has_factory_product =
+    (int) ($item['current_factory_product_id'] ?? 0) > 0;
+
+$current_product_name =
+    (string) ($item['product_name'] ?? '');
+
 ?>
 
 
@@ -470,14 +477,18 @@ $item_total =
 class="form-control product-select">
 
 
-<option value="<?=(int) ($item['factory_product_id'] ?? 0);?>"
+<option value="<?=$has_factory_product ? (int) $item['factory_product_id'] : '';?>"
         data-type="<?=htmlspecialchars($item_type);?>"
         data-price="<?=htmlspecialchars((string) $stored_price);?>"
         selected>
 
-<?=htmlspecialchars((string) ($item['product_name'] ?? 'Current product'));?>
+<?=htmlspecialchars($current_product_name !== '' ? $current_product_name : 'Custom Product');?>
 
 </option>
+
+<?php if ($has_factory_product) { ?>
+<option value="" data-type="MANUAL" data-price="0">Custom Product</option>
+<?php } ?>
 
 
 
@@ -513,6 +524,17 @@ if ((int) $p['id'] === (int) ($item['factory_product_id'] ?? 0)) {
 
 
 </select>
+
+<input type="text"
+       name="custom_product[]"
+       class="form-control mt-2 custom-product"
+       value="<?=!$has_factory_product ? htmlspecialchars($current_product_name) : '';?>"
+       placeholder="Custom Product Name"
+       <?=$has_factory_product ? 'hidden' : '';?>>
+
+<input type="hidden"
+       name="original_product_name[]"
+       value="<?=htmlspecialchars($current_product_name);?>">
 
 
 </td>
@@ -784,10 +806,19 @@ document.querySelectorAll('.order-item-row').forEach(function (row) {
         const option = event.target.selectedOptions[0];
         const type = option.dataset.type === 'MANUAL' ? 'MANUAL' : 'SQFT';
         const defaultPrice = Math.max(0, Number(option.dataset.price) || 0);
+        const customProduct = row.querySelector('.custom-product');
 
         row.querySelector('.calculation-type').value = type;
         row.querySelector('.price-per-sqft').value = type === 'SQFT' ? defaultPrice : 0;
         row.querySelector('.unit-price').value = type === 'MANUAL' ? defaultPrice : 0;
+        customProduct.hidden = event.target.value !== '';
+
+        if (customProduct.hidden) {
+            customProduct.value = '';
+        } else {
+            customProduct.focus();
+        }
+
         syncCalculationFields();
         calculateRow();
     });

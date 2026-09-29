@@ -1236,48 +1236,55 @@ if (!empty($initial_payments)) {
             // GET FACTORY PRODUCT
             // =================================
 
-            $stmt =
-                $conn->prepare("
-
-                    SELECT *
-
-                    FROM factory_products
-
-                    WHERE id = ?
-
-                    LIMIT 1
-
-                ");
+            $fp = null;
 
 
-            if (!$stmt) {
+            if ($product_id > 0) {
 
-                throw new Exception(
-                    "Factory product lookup failed: "
-                    . $conn->error
+                $stmt =
+                    $conn->prepare("
+
+                        SELECT *
+
+                        FROM factory_products
+
+                        WHERE id = ?
+
+                        LIMIT 1
+
+                    ");
+
+
+                if (!$stmt) {
+
+                    throw new Exception(
+                        "Factory product lookup failed: "
+                        . $conn->error
+                    );
+
+                }
+
+
+                $stmt->bind_param(
+                    "i",
+                    $product_id
                 );
+
+
+                $stmt->execute();
+
+
+                $factory =
+                    $stmt->get_result();
+
+
+                $fp =
+                    $factory->fetch_assoc();
 
             }
 
 
-            $stmt->bind_param(
-                "i",
-                $product_id
-            );
-
-
-            $stmt->execute();
-
-
-            $factory =
-                $stmt->get_result();
-
-
-            $fp =
-                $factory->fetch_assoc();
-
-
-            if (!$fp) {
+            if (!$fp && $calculation_type !== 'MANUAL') {
 
                 throw new Exception(
                     "Factory product not found."
@@ -1294,6 +1301,12 @@ if (!empty($initial_payments)) {
             $material_type_id =
                 $fp['material_type_id']
                 ?? null;
+
+
+            $order_product_id =
+                $fp
+                    ? $product_id
+                    : null;
 
 
             $category =
@@ -1329,12 +1342,14 @@ if (!empty($initial_payments)) {
                         height_ft,
                         quantity,
                         sqft,
-                        description
+                        description,
+                        final_price_per_sqft
                     )
 
                     VALUES
 
                     (
+                        ?,
                         ?,
                         ?,
                         ?,
@@ -1368,12 +1383,12 @@ if (!empty($initial_payments)) {
 
             $stmt->bind_param(
 
-                "iiiisssddddddids",
+                "iiiisssddddddidsd",
 
                 $order_id,
                 $category_id,
                 $material_type_id,
-                $product_id,
+                $order_product_id,
                 $category,
                 $product_name,
                 $calculation_type,
@@ -1385,7 +1400,8 @@ if (!empty($initial_payments)) {
                 $height_ft,
                 $qty,
                 $sqft,
-                $description
+                $description,
+                $price
 
             );
 

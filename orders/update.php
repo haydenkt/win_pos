@@ -134,6 +134,7 @@ $prices = $_POST['price'] ?? [];
 $unit_prices = $_POST['unit_price'] ?? [];
 
 $custom_products = $_POST['custom_product'] ?? [];
+$original_product_names = $_POST['original_product_name'] ?? [];
 
 
 
@@ -159,6 +160,7 @@ $product_id = intval(
 
 
 $product_name = "";
+$factory_product = null;
 
 
 
@@ -171,7 +173,7 @@ if($product_id > 0){
 
     $p=mysqli_query($conn,"
 
-    SELECT product_name
+    SELECT product_name, category_id, material_type_id
 
     FROM factory_products
 
@@ -181,10 +183,10 @@ if($product_id > 0){
 
 
 
-    $product=mysqli_fetch_assoc($p);
+    $factory_product=mysqli_fetch_assoc($p);
 
 
-    $product_name=$product['product_name'] ?? '';
+    $product_name=$factory_product['product_name'] ?? '';
 
 
 
@@ -193,12 +195,30 @@ if($product_id > 0){
 else{
 
 
-    $product_name=$custom_products[$i] ?? '';
+    $product_name=trim((string) (
+        $custom_products[$i]
+        ?? $original_product_names[$i]
+        ?? ''
+    ));
 
 }
 
 
 
+
+
+if ($product_id > 0 && !$factory_product) {
+
+    // The original factory product may have been removed.
+    // Keep the saved order-item name and treat it as a custom product.
+    $product_id = 0;
+    $product_name = trim((string) (
+        $custom_products[$i]
+        ?? $original_product_names[$i]
+        ?? ''
+    ));
+
+}
 
 
 if($product_name==""){
@@ -215,37 +235,10 @@ if($product_name==""){
 $category_id = 0;
 $material_id = 0;
 
-if ($product_id > 0) {
+if ($product_id > 0 && $factory_product) {
 
-    $fp_stmt = $conn->prepare("
-        SELECT category_id, material_type_id
-        FROM factory_products
-        WHERE id = ?
-        LIMIT 1
-    ");
-
-    if (!$fp_stmt) {
-        throw new Exception(
-            "Factory product lookup failed: " . $conn->error
-        );
-    }
-
-    $fp_stmt->bind_param("i", $product_id);
-
-    $fp_stmt->execute();
-
-    $fp_result = $fp_stmt->get_result();
-
-    $fp = $fp_result->fetch_assoc();
-
-    if (!$fp) {
-        throw new Exception(
-            "Factory product not found: " . $product_id
-        );
-    }
-
-    $category_id = intval($fp['category_id']);
-    $material_id = intval($fp['material_type_id']);
+    $category_id = intval($factory_product['category_id']);
+    $material_id = intval($factory_product['material_type_id']);
 }
 else {
 
