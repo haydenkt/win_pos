@@ -16,6 +16,8 @@ include "../includes/permissions.php";
 
 requirePermission('payments_view');
 
+$can_manage = hasPermission('payments_manage');
+
 include "../includes/header.php";
 include "../includes/sidebar.php";
 
@@ -103,6 +105,20 @@ ORDER BY payments.id DESC
 Payments
 
 </h2>
+
+<?php if (!empty($_SESSION['success'])) { ?>
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        <?=htmlspecialchars($_SESSION['success']); unset($_SESSION['success']);?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php } ?>
+
+<?php if (!empty($_SESSION['error'])) { ?>
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+        <?=htmlspecialchars($_SESSION['error']); unset($_SESSION['error']);?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php } ?>
 
 
 
@@ -361,6 +377,21 @@ strtotime($row['payment_date'])
 
 
 <td>
+
+
+<?php if($can_manage){ ?>
+
+<a href="edit.php?id=<?=(int) $row['id'];?>"
+
+class="btn btn-warning btn-sm"
+
+title="Edit payment method">
+
+<i class="fa fa-edit"></i>
+
+</a>
+
+<?php } ?>
 
 
 

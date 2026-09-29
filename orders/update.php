@@ -143,8 +143,6 @@ $custom_products = $_POST['custom_product'] ?? [];
 
 $count = count($types);
 
-$new_subtotal = 0;
-
 
 
 
@@ -294,13 +292,13 @@ if ($type === 'SQFT') {
     $sqft = $width * $height * $qty;
     $unit_price = 0;
     $total_price = $sqft * $price;
+    $stored_price = $price;
 } else {
     $sqft = 0;
     $price = 0;
     $total_price = $qty * $unit_price;
+    $stored_price = $unit_price;
 }
-
-$new_subtotal += $total_price;
 
 
 
@@ -358,14 +356,12 @@ width,
 height,
 quantity,
 sqft,
-price_per_sqft,
-unit_price,
-total_price
+final_price_per_sqft
 )
 
 VALUES
 
-(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+(?,?,?,?,?,?,?,?,?,?,?,?)
 
 ");
 
@@ -374,7 +370,7 @@ VALUES
 
 $stmt->bind_param(
 
-"iiiisssddddddd",
+"iiiisssddidd",
 
 $order_id,
 $category_id,
@@ -387,9 +383,7 @@ $width,
 $height,
 $qty,
 $sqft,
-$price,
-$unit_price,
-$total_price
+$stored_price
 
 );
 
@@ -401,27 +395,6 @@ $stmt->execute();
 
 
 }
-
-$financial_stmt = $conn->prepare('SELECT discount, installation_cost, deposit FROM orders WHERE id = ? LIMIT 1');
-$financial_stmt->bind_param('i', $order_id);
-$financial_stmt->execute();
-$financials = $financial_stmt->get_result()->fetch_assoc();
-$financial_stmt->close();
-
-$discount = (float) ($financials['discount'] ?? 0);
-$installation_cost = (float) ($financials['installation_cost'] ?? 0);
-$deposit = (float) ($financials['deposit'] ?? 0);
-$grand_total = max(0, $new_subtotal - $discount + $installation_cost);
-$balance = max(0, $grand_total - $deposit);
-$payment_status = $balance <= 0 ? 'Paid' : ($deposit > 0 ? 'Partial' : 'Unpaid');
-
-$totals_stmt = $conn->prepare('UPDATE orders SET subtotal = ?, grand_total = ?, balance = ?, payment_status = ? WHERE id = ?');
-$totals_stmt->bind_param('dddsi', $new_subtotal, $grand_total, $balance, $payment_status, $order_id);
-$totals_stmt->execute();
-$totals_stmt->close();
-
-
-
 
 $conn->commit();
 

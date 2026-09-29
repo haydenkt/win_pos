@@ -132,11 +132,23 @@ ORDER BY factory_products.product_name ASC
 
 $items=mysqli_query($conn,"
 
-SELECT *
+SELECT
+    order_items.*,
+    factory_products.default_price AS product_default_price,
+    (
+        SELECT invoice_items.price
+        FROM invoice_items
+        WHERE invoice_items.order_item_id = order_items.id
+        ORDER BY invoice_items.id ASC
+        LIMIT 1
+    ) AS linked_invoice_price
 
 FROM order_items
 
-WHERE order_id='$id'
+LEFT JOIN factory_products
+ON factory_products.id = order_items.factory_product_id
+
+WHERE order_items.order_id='$id'
 
 ");
 
@@ -398,7 +410,52 @@ Type
 <tbody>
 
 
-<?php while($item=mysqli_fetch_assoc($items)){ ?>
+<?php while($item=mysqli_fetch_assoc($items)){
+
+$stored_price = max(
+    0,
+    (float) (
+        $item['final_price_per_sqft']
+        ?? $item['price_per_sqft']
+        ?? 0
+    )
+);
+
+if ($stored_price <= 0) {
+    $stored_price = max(
+        0,
+        (float) ($item['linked_invoice_price'] ?? 0)
+    );
+}
+
+if ($stored_price <= 0) {
+    $stored_price = max(
+        0,
+        (float) ($item['product_default_price'] ?? 0)
+    );
+}
+
+$item_type =
+    ($item['calculation_type'] ?? 'SQFT') === 'MANUAL'
+        ? 'MANUAL'
+        : 'SQFT';
+
+$price_per_sqft =
+    $item_type === 'SQFT'
+        ? $stored_price
+        : 0;
+
+$unit_price =
+    $item_type === 'MANUAL'
+        ? $stored_price
+        : 0;
+
+$item_total =
+    $item_type === 'SQFT'
+        ? (float) ($item['sqft'] ?? 0) * $price_per_sqft
+        : (float) ($item['quantity'] ?? 0) * $unit_price;
+
+?>
 
 
 <tr class="order-item-row">
@@ -410,12 +467,15 @@ Type
 
 <select name="factory_product_id[]"
 
-class="form-control">
+class="form-control product-select">
 
 
-<option value="<?=$item['factory_product_id'];?>">
+<option value="<?=(int) ($item['factory_product_id'] ?? 0);?>"
+        data-type="<?=htmlspecialchars($item_type);?>"
+        data-price="<?=htmlspecialchars((string) $stored_price);?>"
+        selected>
 
-<?=$item['product_name'];?>
+<?=htmlspecialchars((string) ($item['product_name'] ?? 'Current product'));?>
 
 </option>
 
@@ -429,17 +489,21 @@ mysqli_data_seek($products,0);
 
 while($p=mysqli_fetch_assoc($products)){
 
+if ((int) $p['id'] === (int) ($item['factory_product_id'] ?? 0)) {
+    continue;
+}
+
 
 ?>
 
 
 <option value="<?=$p['id'];?>"
-
-<?=($p['id']==$item['factory_product_id'])?'selected':'';?>
+        data-type="<?=htmlspecialchars((string) $p['calculation_type']);?>"
+        data-price="<?=htmlspecialchars((string) $p['default_price']);?>"
 
 >
 
-<?=$p['product_name'];?>
+<?=htmlspecialchars((string) $p['product_name']);?>
 
 </option>
 
@@ -558,7 +622,7 @@ class="form-control calculation-type">
 
 <option value="SQFT"
 
-<?=($item['calculation_type']=="SQFT")?'selected':'';?>
+<?=($item_type==="SQFT")?'selected':'';?>
 
 >
 
@@ -569,7 +633,7 @@ SQFT
 
 <option value="MANUAL"
 
-<?=($item['calculation_type']=="MANUAL")?'selected':'';?>
+<?=($item_type==="MANUAL")?'selected':'';?>
 
 >
 
@@ -585,15 +649,15 @@ MANUAL
 </td>
 
 <td>
-<input type="number" step="500" min="0" name="price[]" class="form-control price-per-sqft" value="<?=htmlspecialchars((string) $item['price_per_sqft']);?>">
+<input type="number" step="500" min="0" name="price[]" class="form-control price-per-sqft" value="<?=htmlspecialchars((string) $price_per_sqft);?>">
 </td>
 
 <td>
-<input type="number" step="500" min="0" name="unit_price[]" class="form-control unit-price" value="<?=htmlspecialchars((string) $item['unit_price']);?>">
+<input type="number" step="500" min="0" name="unit_price[]" class="form-control unit-price" value="<?=htmlspecialchars((string) $unit_price);?>">
 </td>
 
 <td>
-<input type="text" name="total[]" class="form-control item-total" value="<?=number_format((float) $item['total_price'], 2, '.', '');?>" readonly>
+<input type="text" name="total[]" class="form-control item-total" value="<?=number_format($item_total, 2, '.', '');?>" readonly>
 </td>
 
 
@@ -687,6 +751,14 @@ Cancel
 
 <script>
 document.querySelectorAll('.order-item-row').forEach(function (row) {
+    function syncCalculationFields() {
+        const isSqft = row.querySelector('.calculation-type').value === 'SQFT';
+        row.querySelector('.width').readOnly = !isSqft;
+        row.querySelector('.height').readOnly = !isSqft;
+        row.querySelector('.price-per-sqft').readOnly = !isSqft;
+        row.querySelector('.unit-price').readOnly = isSqft;
+    }
+
     function calculateRow() {
         const type = row.querySelector('.calculation-type').value;
         const quantity = Math.max(1, Number(row.querySelector('.qty').value) || 1);
@@ -708,10 +780,29 @@ document.querySelectorAll('.order-item-row').forEach(function (row) {
         row.querySelector('.item-total').value = total.toFixed(2);
     }
 
+    row.querySelector('.product-select').addEventListener('change', function (event) {
+        const option = event.target.selectedOptions[0];
+        const type = option.dataset.type === 'MANUAL' ? 'MANUAL' : 'SQFT';
+        const defaultPrice = Math.max(0, Number(option.dataset.price) || 0);
+
+        row.querySelector('.calculation-type').value = type;
+        row.querySelector('.price-per-sqft').value = type === 'SQFT' ? defaultPrice : 0;
+        row.querySelector('.unit-price').value = type === 'MANUAL' ? defaultPrice : 0;
+        syncCalculationFields();
+        calculateRow();
+    });
+
+    row.querySelector('.calculation-type').addEventListener('change', function () {
+        syncCalculationFields();
+    });
+
     row.querySelectorAll('input, select').forEach(function (field) {
         field.addEventListener('input', calculateRow);
         field.addEventListener('change', calculateRow);
     });
+
+    syncCalculationFields();
+    calculateRow();
 });
 </script>
 

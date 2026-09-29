@@ -20,7 +20,7 @@ function ensureV2PermissionCatalog(mysqli $conn): void
         'inventory_manage' => 'Manage stock quantities and movements',
         'returned_inventory_view' => 'View returned inventory',
         'payments_view' => 'View payments and receipts',
-        'payments_manage' => 'Create and delete payments',
+        'payments_manage' => 'Create, edit and delete payments',
         'expenses_view' => 'View expenses',
         'expenses_manage' => 'Create, edit and delete expenses',
         'labour_view' => 'View workers, attendance, advances and savings',
