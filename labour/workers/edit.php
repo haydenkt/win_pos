@@ -210,7 +210,7 @@ name="daily_rate"
 
 step="50"
 
-class="form-control"
+class="form-control js-comma-price"
 
 value="<?= $worker['daily_rate'] ?>"
 

@@ -73,7 +73,7 @@ $form_action = $is_edit ? 'update.php' : 'save.php';
 
                 <div class="col-lg-6">
                     <label id="priceLabel" for="default_price" class="form-label">Default price per sqft</label>
-                    <input id="default_price" type="number" name="default_price" class="form-control"
+                    <input id="default_price" type="number" name="default_price" class="form-control js-comma-price"
                            min="0" step="50" value="<?=htmlspecialchars((string) ($product['default_price'] ?? ''));?>" required>
                 </div>
 

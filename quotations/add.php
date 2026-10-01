@@ -326,7 +326,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <input type="hidden" name="sqft[]" class="sqftInput">
                             <small class="selling-size d-block text-body-secondary mt-1">0 ft × 0 ft</small>
                         </td>
-                        <td><input type="number" min="0" step="50" name="unit_price[]" class="form-control rate" placeholder="0" required></td>
+                        <td><input type="text" inputmode="decimal" data-money-step="50" name="unit_price[]" class="form-control rate money-input" placeholder="0" required></td>
                         <td>
                             <strong><span class="lineTotal">0.00</span></strong>
                             <input type="hidden" name="line_total[]" class="lineTotalInput">
@@ -348,6 +348,36 @@ require_once __DIR__ . '/../includes/sidebar.php';
     const discount = document.getElementById('discount');
     const form = document.getElementById('quoteForm');
     const money = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const parseMoney = (value) => Number(String(value ?? '').replaceAll(',', '')) || 0;
+
+    const formatMoneyInput = (input) => {
+        const oldValue = input.value;
+        const oldCursor = input.selectionStart ?? oldValue.length;
+        const charactersBeforeCursor = oldValue.slice(0, oldCursor).replaceAll(',', '').length;
+        const raw = oldValue.replaceAll(',', '').replace(/[^0-9.]/g, '');
+        const hasDecimal = raw.includes('.');
+        const parts = raw.split('.');
+        const integer = (parts.shift() || '0').replace(/^0+(?=\d)/, '');
+        const decimal = parts.join('');
+        const formattedInteger = raw === '' ? '' : integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        const formatted = hasDecimal ? `${formattedInteger}.${decimal}` : formattedInteger;
+        input.value = formatted;
+        const step = Number(input.dataset.moneyStep || 0);
+        const amount = parseMoney(formatted);
+        const invalidStep = formatted !== '' && step > 0 && Math.abs(amount % step) > 1e-7;
+        input.setCustomValidity(invalidStep ? `Price must be in steps of ${step}.` : '');
+
+        if (document.activeElement === input) {
+            let cursor = 0;
+            let characters = 0;
+            while (cursor < formatted.length && characters < charactersBeforeCursor) {
+                if (formatted[cursor] !== ',') characters++;
+                cursor++;
+            }
+            input.setSelectionRange(cursor, cursor);
+        }
+    };
 
     const closeProductResults = (except = null) => {
         items.querySelectorAll('.product-results.show').forEach((box) => {
@@ -382,7 +412,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         const width = Number(row.querySelector('.width').value) || 0;
         const height = Number(row.querySelector('.height').value) || 0;
         const quantity = Number(row.querySelector('.qty').value) || 0;
-        const rate = Number(row.querySelector('.rate').value) || 0;
+        const rate = parseMoney(row.querySelector('.rate').value);
         const widthFeet = width > 0 ? Math.ceil(((width / 304.8) * 2) - 1e-9) / 2 : 0;
         const heightFeet = height > 0 ? Math.ceil(((height / 304.8) * 2) - 1e-9) / 2 : 0;
         const squareFeet = widthFeet * heightFeet * quantity;
@@ -401,6 +431,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         search.setCustomValidity('');
         row.querySelector('.product-id').value = product.id;
         row.querySelector('.rate').value = product.price > 0 ? product.price : '';
+        formatMoneyInput(row.querySelector('.rate'));
         row.querySelector('.product-results').classList.remove('show');
         calculateRow(row);
     };
@@ -438,6 +469,9 @@ require_once __DIR__ . '/../includes/sidebar.php';
     const addItem = (data = {}) => {
         const row = template.content.firstElementChild.cloneNode(true);
         const search = row.querySelector('.product-search');
+        const rateInput = row.querySelector('.rate');
+        rateInput.addEventListener('input', () => formatMoneyInput(rateInput));
+        rateInput.addEventListener('focus', () => rateInput.select());
         row.querySelectorAll('.width, .height, .qty, .rate').forEach((input) => {
             input.addEventListener('input', () => calculateRow(row));
         });
@@ -467,6 +501,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         row.querySelector('.height').value = data.height || '';
         row.querySelector('.qty').value = data.quantity || 1;
         row.querySelector('.rate').value = data.rate || '';
+        formatMoneyInput(row.querySelector('.rate'));
 
         updateItemNumbers();
         calculateRow(row);
@@ -528,7 +563,12 @@ require_once __DIR__ . '/../includes/sidebar.php';
             event.stopPropagation();
             form.classList.add('was-validated');
             (firstInvalidProduct || form.querySelector(':invalid'))?.focus();
+            return;
         }
+
+        form.querySelectorAll('.money-input[name]').forEach((input) => {
+            input.value = input.value.replaceAll(',', '');
+        });
     });
     let heldDraft = null;
     try {

@@ -155,7 +155,7 @@ Purchase Price
 <input type="number"
 step="50"
 name="purchase_price"
-class="form-control"
+class="form-control js-comma-price"
 value="0">
 
 
@@ -176,7 +176,7 @@ Selling Price
 <input type="number"
 step="50"
 name="selling_price"
-class="form-control"
+class="form-control js-comma-price"
 value="0">
 
 

@@ -641,7 +641,7 @@ value="<?=htmlspecialchars($item['unit_price'] ?? 0);?>"
 <input
 type="number"
 name="cost_price[]"
-class="form-control"
+class="form-control js-comma-price"
 min="0"
 step="50"
 value="0"

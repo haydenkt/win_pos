@@ -671,11 +671,11 @@ MANUAL
 </td>
 
 <td>
-<input type="number" step="50" min="0" name="price[]" class="form-control price-per-sqft" value="<?=htmlspecialchars((string) $price_per_sqft);?>">
+<input type="number" step="50" min="0" name="price[]" class="form-control price-per-sqft js-comma-price" value="<?=htmlspecialchars((string) $price_per_sqft);?>">
 </td>
 
 <td>
-<input type="number" step="50" min="0" name="unit_price[]" class="form-control unit-price" value="<?=htmlspecialchars((string) $unit_price);?>">
+<input type="number" step="50" min="0" name="unit_price[]" class="form-control unit-price js-comma-price" value="<?=htmlspecialchars((string) $unit_price);?>">
 </td>
 
 <td>
@@ -772,6 +772,8 @@ Cancel
 </form>
 
 <script>
+const orderPriceNumber = (value) => Number(String(value ?? '').replaceAll(',', '')) || 0;
+
 document.querySelectorAll('.order-item-row').forEach(function (row) {
     function syncCalculationFields() {
         const isSqft = row.querySelector('.calculation-type').value === 'SQFT';
@@ -782,6 +784,8 @@ document.querySelectorAll('.order-item-row').forEach(function (row) {
     }
 
     function calculateRow() {
+        window.formatCommaPriceInput?.(row.querySelector('.price-per-sqft'));
+        window.formatCommaPriceInput?.(row.querySelector('.unit-price'));
         const type = row.querySelector('.calculation-type').value;
         const quantity = Math.max(1, Number(row.querySelector('.qty').value) || 1);
         let total = 0;
@@ -789,12 +793,12 @@ document.querySelectorAll('.order-item-row').forEach(function (row) {
         if (type === 'SQFT') {
             const width = Math.max(0, Number(row.querySelector('.width').value) || 0);
             const height = Math.max(0, Number(row.querySelector('.height').value) || 0);
-            const price = Math.max(0, Number(row.querySelector('.price-per-sqft').value) || 0);
+            const price = Math.max(0, orderPriceNumber(row.querySelector('.price-per-sqft').value));
             const sqft = width * height * quantity;
             row.querySelector('.sqft').value = sqft.toFixed(2);
             total = sqft * price;
         } else {
-            const unitPrice = Math.max(0, Number(row.querySelector('.unit-price').value) || 0);
+            const unitPrice = Math.max(0, orderPriceNumber(row.querySelector('.unit-price').value));
             row.querySelector('.sqft').value = '0.00';
             total = quantity * unitPrice;
         }

@@ -1128,7 +1128,85 @@ let invoiceDraftTimer = null;
 
 function number(value)
 {
-    return Number.parseFloat(value) || 0;
+    return Number.parseFloat(
+        String(value ?? '').replaceAll(',', '')
+    ) || 0;
+}
+
+
+function formatMoneyValue(value)
+{
+    const raw = String(value ?? '')
+        .replaceAll(',', '')
+        .replace(/[^0-9.]/g, '');
+
+    if (raw === '') {
+        return '';
+    }
+
+    const hasDecimal = raw.includes('.');
+    const parts = raw.split('.');
+    const integer = (parts.shift() || '0')
+        .replace(/^0+(?=\d)/, '');
+    const decimal = parts.join('');
+    const formattedInteger = integer.replace(
+        /\B(?=(\d{3})+(?!\d))/g,
+        ','
+    );
+
+    return hasDecimal
+        ? `${formattedInteger}.${decimal}`
+        : formattedInteger;
+}
+
+
+function formatMoneyInput(input)
+{
+    if (!input) {
+        return;
+    }
+
+    const oldValue = input.value;
+    const oldCursor = input.selectionStart ?? oldValue.length;
+    const charactersBeforeCursor = oldValue
+        .slice(0, oldCursor)
+        .replaceAll(',', '')
+        .length;
+    const formatted = formatMoneyValue(oldValue);
+    input.value = formatted;
+
+    const step = Number(input.dataset.moneyStep || 0);
+    const amount = number(formatted);
+    const invalidStep = formatted !== ''
+        && step > 0
+        && Math.abs(amount % step) > 1e-7;
+    input.setCustomValidity(
+        invalidStep
+            ? `Price must be in steps of ${step}.`
+            : ''
+    );
+
+    if (document.activeElement === input) {
+        let cursor = 0;
+        let characters = 0;
+        while (cursor < formatted.length && characters < charactersBeforeCursor) {
+            if (formatted[cursor] !== ',') {
+                characters++;
+            }
+            cursor++;
+        }
+        input.setSelectionRange(cursor, cursor);
+    }
+}
+
+
+function bindMoneyInputs(scope)
+{
+    scope.querySelectorAll('.money-input').forEach(input => {
+        input.addEventListener('input', () => formatMoneyInput(input));
+        input.addEventListener('focus', () => input.select());
+        formatMoneyInput(input);
+    });
 }
 
 
@@ -1338,12 +1416,16 @@ function input(
 )
 {
 
+    const isMoney =
+        name === 'price';
+
     return `
 
         <input
-            type="number"
+            type="${isMoney ? 'text' : 'number'}"
             name="${name}[]"
-            class="form-control"
+            class="form-control${isMoney ? ' money-input' : ''}"
+            ${isMoney ? 'inputmode="decimal" data-money-step="50"' : ''}
             value="${escapeHtml(value)}"
             ${options}
         >
@@ -1732,10 +1814,10 @@ function sqftCells(state)
         <td>
 
             <input
-                type="number"
-                min="0"
-                step="50"
-                class="form-control base-price"
+                type="text"
+                inputmode="decimal"
+                class="form-control base-price money-input"
+                data-money-step="50"
                 value="${escapeHtml(
                     state.basePrice
                 )}"
@@ -2041,6 +2123,8 @@ function renderItem(
 
     `;
 
+
+    bindMoneyInputs(item);
 
     bindItem(item);
 
@@ -2520,6 +2604,8 @@ function calculateItem(item)
 
         }
 
+        formatMoneyInput(basePriceInput);
+
 
         const basePrice =
             number(
@@ -2598,11 +2684,18 @@ function calculateItem(item)
     else {
 
 
+        const priceInput =
+            item.querySelector(
+                '[name="price[]"]'
+            );
+
+
+        formatMoneyInput(priceInput);
+
+
         const price =
             number(
-                item.querySelector(
-                    '[name="price[]"]'
-                )?.value
+                priceInput?.value
             );
 
 
@@ -3599,6 +3692,15 @@ document
                 return;
 
             }
+
+
+            document
+                .querySelectorAll(
+                    '#invoiceForm .money-input[name]'
+                )
+                .forEach(input => {
+                    input.value = input.value.replaceAll(',', '');
+                });
 
 
             saveButton.disabled =

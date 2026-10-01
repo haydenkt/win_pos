@@ -659,7 +659,7 @@ step="50"
 
 name="price[]"
 
-class="form-control price">
+class="form-control price js-comma-price">
 
 </td>
 
@@ -681,7 +681,7 @@ step="50"
 
 name="unit_price[]"
 
-class="form-control unit_price">
+class="form-control unit_price js-comma-price">
 
 </td>
 
@@ -754,6 +754,10 @@ id="addRow">
 
 </div>
 <script>
+
+function priceNumber(value) {
+    return Number(String(value ?? '').replaceAll(',', '')) || 0;
+}
 
 
 // ==========================
@@ -992,6 +996,9 @@ unit.readOnly=false;
 
 function calculate(row){
 
+window.formatCommaPriceInput?.(row.querySelector(".price"));
+window.formatCommaPriceInput?.(row.querySelector(".unit_price"));
+
 
 let type=row.querySelector(".type").value;
 
@@ -1021,7 +1028,7 @@ Number(row.querySelector(".height").value)||0;
 
 let price=
 
-Number(row.querySelector(".price").value)||0;
+priceNumber(row.querySelector(".price").value);
 
 
 
@@ -1044,7 +1051,7 @@ else{
 
 let unit=
 
-Number(row.querySelector(".unit_price").value)||0;
+priceNumber(row.querySelector(".unit_price").value);
 
 
 
@@ -1155,7 +1162,7 @@ Number(document.getElementById("discount")?.value)||0;
 
 let installation=
 
-Number(document.getElementById("installation_cost")?.value)||0;
+priceNumber(document.getElementById("installation_cost")?.value);
 
 
 
@@ -1381,7 +1388,7 @@ id="installation_cost"
 
 value="0"
 
-class="form-control">
+class="form-control js-comma-price">
 
 </div>
 
