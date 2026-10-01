@@ -36,7 +36,7 @@ include '../includes/sidebar.php';
             <i class="fa fa-chart-column"></i>
             <span>
                 <strong>Sales report</strong>
-                <small>Invoices, deposits and outstanding balances</small>
+                <small>Orders, product sales and services in one report</small>
             </span>
         </a>
     </div>

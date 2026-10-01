@@ -22,6 +22,9 @@ if (!$validDate($from) || !$validDate($to) || (($from === '') xor ($to === '')) 
 }
 
 $dateWhere = $from !== '' ? ' WHERE DATE(i.created_at) BETWEEN ? AND ? ' : '';
+$materialWhere = $from !== ''
+    ? " WHERE ii.item_type='ORDER' AND DATE(i.created_at) BETWEEN ? AND ? "
+    : " WHERE ii.item_type='ORDER' ";
 function reportQuery(mysqli $conn, string $sql, string $from, string $to): mysqli_result
 {
     $stmt = $conn->prepare($sql);
@@ -38,9 +41,11 @@ function reportQuery(mysqli $conn, string $sql, string $from, string $to): mysql
 }
 
 $summary = reportQuery($conn, "SELECT COUNT(i.id) total_invoice, COALESCE(SUM(i.grand_total),0) total_sales, COALESCE(SUM(i.deposit),0) total_paid, COALESCE(SUM(i.balance),0) total_balance FROM invoices i $dateWhere", $from, $to)->fetch_assoc();
-$details = reportQuery($conn, "SELECT i.invoice_no, DATE(i.created_at) invoice_date, c.name customer_name, ii.item_type, ii.product_name, ii.quantity, ii.sqft, ii.price, ii.total FROM invoice_items ii JOIN invoices i ON i.id=ii.invoice_id LEFT JOIN customers c ON c.id=i.customer_id $dateWhere ORDER BY i.created_at, i.id, ii.id", $from, $to);
-$materials = reportQuery($conn, "SELECT COALESCE(mt.name,'Other / non-factory') material_name, COUNT(ii.id) total_items, COALESCE(SUM(ii.quantity),0) qty, COALESCE(SUM(ii.sqft),0) sqft, COALESCE(SUM(ii.total),0) sales FROM invoice_items ii JOIN invoices i ON i.id=ii.invoice_id LEFT JOIN factory_products fp ON ii.item_type='ORDER' AND ii.product_id=fp.id LEFT JOIN material_types mt ON mt.id=fp.material_type_id $dateWhere GROUP BY mt.id, mt.name ORDER BY sales DESC", $from, $to);
-$products = reportQuery($conn, "SELECT ii.product_name, COALESCE(SUM(ii.quantity),0) qty, COALESCE(SUM(ii.sqft),0) sqft, COALESCE(SUM(ii.total),0) sales FROM invoice_items ii JOIN invoices i ON i.id=ii.invoice_id $dateWhere GROUP BY ii.product_name ORDER BY sales DESC LIMIT 10", $from, $to);
+$invoices = reportQuery($conn, "SELECT i.invoice_no, DATE(i.created_at) invoice_date, c.name customer_name, i.subtotal, i.discount, i.grand_total, i.deposit, i.balance, i.payment_status, i.invoice_status FROM invoices i LEFT JOIN customers c ON c.id=i.customer_id $dateWhere ORDER BY i.created_at DESC, i.id DESC", $from, $to);
+$types = reportQuery($conn, "SELECT UPPER(COALESCE(NULLIF(ii.item_type,''),'OTHER')) item_type, COUNT(ii.id) total_items, COALESCE(SUM(ii.quantity),0) qty, COALESCE(SUM(ii.sqft),0) sqft, COALESCE(SUM(ii.total),0) sales FROM invoice_items ii JOIN invoices i ON i.id=ii.invoice_id $dateWhere GROUP BY UPPER(COALESCE(NULLIF(ii.item_type,''),'OTHER')) ORDER BY sales DESC", $from, $to);
+$details = reportQuery($conn, "SELECT i.invoice_no, DATE(i.created_at) invoice_date, c.name customer_name, UPPER(COALESCE(NULLIF(ii.item_type,''),'OTHER')) item_type, ii.product_name, ii.quantity, ii.sqft, ii.price, ii.total FROM invoice_items ii JOIN invoices i ON i.id=ii.invoice_id LEFT JOIN customers c ON c.id=i.customer_id $dateWhere ORDER BY i.created_at DESC, i.id DESC, ii.id ASC", $from, $to);
+$materials = reportQuery($conn, "SELECT COALESCE(mt.name,'Unassigned') material_name, COUNT(ii.id) total_items, COALESCE(SUM(ii.quantity),0) qty, COALESCE(SUM(ii.sqft),0) sqft, COALESCE(SUM(ii.total),0) sales FROM invoice_items ii JOIN invoices i ON i.id=ii.invoice_id LEFT JOIN factory_products fp ON ii.product_id=fp.id LEFT JOIN material_types mt ON mt.id=fp.material_type_id $materialWhere GROUP BY mt.id, mt.name ORDER BY sales DESC", $from, $to);
+$products = reportQuery($conn, "SELECT UPPER(COALESCE(NULLIF(ii.item_type,''),'OTHER')) item_type, ii.product_name, COALESCE(SUM(ii.quantity),0) qty, COALESCE(SUM(ii.sqft),0) sqft, COALESCE(SUM(ii.total),0) sales FROM invoice_items ii JOIN invoices i ON i.id=ii.invoice_id $dateWhere GROUP BY UPPER(COALESCE(NULLIF(ii.item_type,''),'OTHER')), ii.product_name ORDER BY sales DESC", $from, $to);
 
 $period = $from === '' ? 'All dates' : date('d M Y', strtotime($from)).' to '.date('d M Y', strtotime($to));
 $title = [['value'=>'Win POS Sales Report','style'=>1],null,null,null];
@@ -57,14 +62,53 @@ $summaryRows = [
     [['value'=>'Outstanding balance'],['value'=>(float)$summary['total_balance'],'type'=>'number','style'=>4]],
 ];
 
-$detailRows = [$title, [['value'=>'Period','style'=>2],['value'=>$period]], [], $tableHeader(['Invoice','Date','Customer','Type','Product','Quantity','Sqft','Unit price','Total'])];
+$invoiceRows = [$title, [['value'=>'Period','style'=>2],['value'=>$period]], [], $tableHeader(['Invoice','Date','Customer','Subtotal','Discount','Grand total','Paid','Balance','Payment status','Invoice status'])];
+while ($row = $invoices->fetch_assoc()) {
+    $invoiceRows[] = [
+        ['value'=>$row['invoice_no']],
+        ['value'=>$row['invoice_date'],'type'=>'date','style'=>7],
+        ['value'=>$row['customer_name'] ?: '—'],
+        ['value'=>(float)$row['subtotal'],'type'=>'number','style'=>4],
+        ['value'=>(float)$row['discount'],'type'=>'number','style'=>4],
+        ['value'=>(float)$row['grand_total'],'type'=>'number','style'=>4],
+        ['value'=>(float)$row['deposit'],'type'=>'number','style'=>4],
+        ['value'=>(float)$row['balance'],'type'=>'number','style'=>4],
+        ['value'=>$row['payment_status']],
+        ['value'=>$row['invoice_status']],
+    ];
+}
+
+$typeRows = [$title, [['value'=>'Period','style'=>2],['value'=>$period]], [], $tableHeader(['Sales type','Items','Quantity','Sqft','Sales'])];
+while ($row = $types->fetch_assoc()) {
+    $typeRows[] = [
+        ['value'=>$row['item_type']],
+        ['value'=>(int)$row['total_items'],'type'=>'number','style'=>6],
+        ['value'=>(float)$row['qty'],'type'=>'number','style'=>6],
+        ['value'=>(float)$row['sqft'],'type'=>'number','style'=>4],
+        ['value'=>(float)$row['sales'],'type'=>'number','style'=>4],
+    ];
+}
+
+$detailHeader = ['Invoice','Date','Customer','Type','Product / Service','Quantity','Sqft','Unit price','Total'];
+$detailRows = [$title, [['value'=>'Period','style'=>2],['value'=>$period]], [], $tableHeader($detailHeader)];
+$orderRows = [$title, [['value'=>'Period','style'=>2],['value'=>$period]], [], $tableHeader($detailHeader)];
+$saleRows = [$title, [['value'=>'Period','style'=>2],['value'=>$period]], [], $tableHeader($detailHeader)];
+$serviceRows = [$title, [['value'=>'Period','style'=>2],['value'=>$period]], [], $tableHeader($detailHeader)];
 while ($row = $details->fetch_assoc()) {
-    $detailRows[] = [
+    $detailRow = [
         ['value'=>$row['invoice_no']], ['value'=>$row['invoice_date'],'type'=>'date','style'=>7],
         ['value'=>$row['customer_name'] ?: '—'], ['value'=>$row['item_type']], ['value'=>$row['product_name']],
         ['value'=>(float)$row['quantity'],'type'=>'number','style'=>6], ['value'=>(float)$row['sqft'],'type'=>'number','style'=>4],
         ['value'=>(float)$row['price'],'type'=>'number','style'=>4], ['value'=>(float)$row['total'],'type'=>'number','style'=>4],
     ];
+    $detailRows[] = $detailRow;
+    if ($row['item_type'] === 'ORDER') {
+        $orderRows[] = $detailRow;
+    } elseif ($row['item_type'] === 'SALE') {
+        $saleRows[] = $detailRow;
+    } elseif ($row['item_type'] === 'SERVICE') {
+        $serviceRows[] = $detailRow;
+    }
 }
 
 $materialRows = [$title, [['value'=>'Period','style'=>2],['value'=>$period]], [], $tableHeader(['Material type','Items','Quantity','Sqft','Sales'])];
@@ -72,18 +116,23 @@ while ($row = $materials->fetch_assoc()) {
     $materialRows[] = [['value'=>$row['material_name']],['value'=>(int)$row['total_items'],'type'=>'number','style'=>6],['value'=>(float)$row['qty'],'type'=>'number','style'=>6],['value'=>(float)$row['sqft'],'type'=>'number','style'=>4],['value'=>(float)$row['sales'],'type'=>'number','style'=>4]];
 }
 
-$productRows = [$title, [['value'=>'Period','style'=>2],['value'=>$period]], [], $tableHeader(['Product','Quantity','Sqft','Sales'])];
+$productRows = [$title, [['value'=>'Period','style'=>2],['value'=>$period]], [], $tableHeader(['Type','Product / Service','Quantity','Sqft','Sales'])];
 while ($row = $products->fetch_assoc()) {
-    $productRows[] = [['value'=>$row['product_name']],['value'=>(float)$row['qty'],'type'=>'number','style'=>6],['value'=>(float)$row['sqft'],'type'=>'number','style'=>4],['value'=>(float)$row['sales'],'type'=>'number','style'=>4]];
+    $productRows[] = [['value'=>$row['item_type']],['value'=>$row['product_name']],['value'=>(float)$row['qty'],'type'=>'number','style'=>6],['value'=>(float)$row['sqft'],'type'=>'number','style'=>4],['value'=>(float)$row['sales'],'type'=>'number','style'=>4]];
 }
 
 $sheets = [
     ['name'=>'Summary','rows'=>$summaryRows,'widths'=>[28,22,14,14]],
-    ['name'=>'Sales detail','rows'=>$detailRows,'widths'=>[20,14,24,14,32,12,12,16,16]],
+    ['name'=>'All invoices','rows'=>$invoiceRows,'widths'=>[20,14,26,16,16,18,16,16,18,18]],
+    ['name'=>'Sales by type','rows'=>$typeRows,'widths'=>[20,12,14,14,18]],
+    ['name'=>'All sales','rows'=>$detailRows,'widths'=>[20,14,24,14,32,12,12,16,16]],
+    ['name'=>'Orders','rows'=>$orderRows,'widths'=>[20,14,24,14,32,12,12,16,16]],
+    ['name'=>'Product sales','rows'=>$saleRows,'widths'=>[20,14,24,14,32,12,12,16,16]],
+    ['name'=>'Services','rows'=>$serviceRows,'widths'=>[20,14,24,14,32,12,12,16,16]],
     ['name'=>'Material sales','rows'=>$materialRows,'widths'=>[28,12,14,14,18]],
-    ['name'=>'Top products','rows'=>$productRows,'widths'=>[34,14,14,18]],
+    ['name'=>'Products summary','rows'=>$productRows,'widths'=>[14,34,14,14,18]],
 ];
 
-$filename = 'Win_POS_Sales_Report_'.($from === '' ? date('Y-m-d') : $from.'_to_'.$to).'.xlsx';
+$filename = 'Win_POS_All_Sales_Report_'.($from === '' ? date('Y-m-d') : $from.'_to_'.$to).'.xlsx';
 SimpleXlsx::download($filename, $sheets);
 exit;

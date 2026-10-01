@@ -1,33 +1,420 @@
 <?php
 session_start();
-if (!isset($_SESSION['user'])) { header('Location:../index.php'); exit; }
-require_once __DIR__.'/../config/database.php';
-require_once __DIR__.'/../includes/permissions.php';
+if (!isset($_SESSION['user'])) {
+    header('Location:../index.php');
+    exit;
+}
+
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/permissions.php';
 requirePermission('quotations_manage');
-$customers=$conn->query('SELECT id,name,phone FROM customers ORDER BY name');
-$factory=$conn->query("SELECT id,product_name,default_price FROM factory_products WHERE status='Active' ORDER BY product_name");
-if(empty($_SESSION['quotation_csrf']))$_SESSION['quotation_csrf']=bin2hex(random_bytes(32));
-$page_title='New quotation';
-require_once __DIR__.'/../includes/header.php';
-require_once __DIR__.'/../includes/sidebar.php';
+
+$customers = $conn->query('SELECT id, name, phone FROM customers ORDER BY name');
+$factoryResult = $conn->query("SELECT id, product_name, default_price FROM factory_products WHERE status='Active' ORDER BY product_name");
+$factoryProducts = [];
+while ($product = $factoryResult->fetch_assoc()) {
+    $factoryProducts[] = [
+        'id' => (int) $product['id'],
+        'name' => $product['product_name'],
+        'price' => (float) $product['default_price'],
+    ];
+}
+
+if (empty($_SESSION['quotation_csrf'])) {
+    $_SESSION['quotation_csrf'] = bin2hex(random_bytes(32));
+}
+
+$page_title = 'New quotation';
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/sidebar.php';
 ?>
-<div class="page-hero"><div><h1 class="page-title">New quotation</h1><p class="page-subtitle">Dimensions calculate the billable square feet automatically.</p></div></div>
+
+<style>
+    .quote-item {
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.85rem;
+        overflow: visible;
+    }
+    .quote-item + .quote-item { margin-top: 1rem; }
+    .quote-item-head {
+        align-items: center;
+        background: var(--bs-tertiary-bg);
+        border-bottom: 1px solid var(--bs-border-color);
+        border-radius: 0.85rem 0.85rem 0 0;
+        display: flex;
+        justify-content: space-between;
+        padding: 0.7rem 0.9rem;
+    }
+    .quote-item-number {
+        align-items: center;
+        background: var(--bs-primary);
+        border-radius: 50%;
+        color: #fff;
+        display: inline-flex;
+        font-size: 0.78rem;
+        font-weight: 700;
+        height: 1.8rem;
+        justify-content: center;
+        margin-right: 0.5rem;
+        width: 1.8rem;
+    }
+    .quote-table { min-width: 980px; }
+    .quote-product-cell { min-width: 270px; width: 32%; }
+    .quote-measure-cell { min-width: 120px; }
+    .quote-qty-cell { min-width: 90px; }
+    .quote-total-cell { min-width: 135px; }
+    .product-picker { position: relative; }
+    .product-results {
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color);
+        border-radius: 0.65rem;
+        box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.14);
+        display: none;
+        left: 0;
+        max-height: 260px;
+        overflow-y: auto;
+        position: absolute;
+        right: 0;
+        top: calc(100% + 0.35rem);
+        z-index: 1080;
+    }
+    .product-results.show { display: block; }
+    .product-result {
+        background: transparent;
+        border: 0;
+        border-bottom: 1px solid var(--bs-border-color);
+        color: var(--bs-body-color);
+        display: flex;
+        gap: 0.75rem;
+        justify-content: space-between;
+        padding: 0.7rem 0.8rem;
+        text-align: left;
+        width: 100%;
+    }
+    .product-result:last-child { border-bottom: 0; }
+    .product-result:hover, .product-result:focus { background: var(--bs-tertiary-bg); }
+    .product-result-price { color: var(--bs-secondary-color); font-size: 0.8rem; white-space: nowrap; }
+    .quote-summary-row {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        padding: 0.45rem 0;
+    }
+    .quote-summary-total {
+        border-top: 1px solid var(--bs-border-color);
+        font-size: 1.15rem;
+        margin-top: 0.5rem;
+        padding-top: 1rem;
+    }
+    @media (max-width: 767.98px) {
+        .page-hero { align-items: flex-start; }
+        .quote-actions .btn { width: 100%; }
+    }
+</style>
+
+<div class="page-hero">
+    <div>
+        <a href="index.php" class="btn btn-sm btn-outline-secondary mb-3">
+            <i class="fa fa-arrow-left me-1"></i> Back to quotations
+        </a>
+        <h1 class="page-title">New quotation</h1>
+        <p class="page-subtitle">Prepare a professional estimate with automatic square-foot pricing.</p>
+    </div>
+</div>
+
+<?php if (!empty($_SESSION['error'])): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa fa-circle-exclamation me-2"></i><?= htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
 <form action="save.php" method="post" id="quoteForm">
-<input type="hidden" name="csrf_token" value="<?=htmlspecialchars($_SESSION['quotation_csrf']);?>">
-<div class="card mb-4"><div class="card-body"><div class="row g-3">
-<div class="col-md-6"><label class="form-label">Customer</label><select name="customer_id" class="form-select" required><option value="">Choose customer</option><?php while($c=$customers->fetch_assoc()):?><option value="<?=$c['id'];?>"><?=htmlspecialchars($c['name'].' · '.$c['phone']);?></option><?php endwhile;?></select></div>
-<div class="col-md-3"><label class="form-label">Quotation date</label><input type="date" name="quote_date" value="<?=date('Y-m-d');?>" class="form-control" required></div>
-<div class="col-md-3"><label class="form-label">Valid until</label><input type="date" name="valid_until" value="<?=date('Y-m-d',strtotime('+30 days'));?>" class="form-control"></div>
-</div></div></div>
-<div class="card mb-4"><div class="card-header d-flex justify-content-between align-items-center"><span>Items</span><button type="button" id="addRow" class="btn btn-sm btn-outline-primary"><i class="fa fa-plus"></i> Add item</button></div><div class="table-responsive"><table class="table align-middle"><thead><tr><th style="min-width:220px">Product</th><th>Width mm</th><th>Height mm</th><th>Qty</th><th>Sqft</th><th>Rate / sqft</th><th>Total</th><th></th></tr></thead><tbody id="items"></tbody></table></div></div>
-<div class="row g-4"><div class="col-lg-7"><div class="card card-body"><label class="form-label">Notes</label><textarea name="notes" rows="4" class="form-control"></textarea></div></div><div class="col-lg-5"><div class="card card-body"><div class="d-flex justify-content-between mb-3"><span>Subtotal</span><strong id="subtotalText">0.00</strong></div><div class="mb-3"><label class="form-label">Discount</label><input type="number" min="0" step="500" value="0" name="discount" id="discount" class="form-control"></div><div class="d-flex justify-content-between fs-5 border-top pt-3"><span>Total</span><strong id="totalText">0.00</strong></div><button class="btn btn-primary w-100 mt-4"><i class="fa fa-save"></i> Save quotation</button></div></div></div>
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['quotation_csrf']); ?>">
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fa fa-user me-2"></i>Customer &amp; quotation details</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-lg-6">
+                    <label class="form-label" for="customer_id">Customer <span class="text-danger">*</span></label>
+                    <select name="customer_id" id="customer_id" class="form-select" required>
+                        <option value="">Choose customer</option>
+                        <?php while ($customer = $customers->fetch_assoc()): ?>
+                            <option value="<?= (int) $customer['id']; ?>">
+                                <?= htmlspecialchars($customer['name'] . ($customer['phone'] ? ' · ' . $customer['phone'] : '')); ?>
+                            </option>
+                        <?php endwhile; ?>
+                    </select>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <label class="form-label" for="quote_date">Quotation date <span class="text-danger">*</span></label>
+                    <input type="date" name="quote_date" id="quote_date" value="<?= date('Y-m-d'); ?>" class="form-control" required>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <label class="form-label" for="valid_until">Valid until</label>
+                    <input type="date" name="valid_until" id="valid_until" value="<?= date('Y-m-d', strtotime('+30 days')); ?>" class="form-control">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center justify-content-between gap-3">
+            <h5 class="mb-0"><i class="fa fa-list me-2"></i>Quotation items</h5>
+            <span class="badge text-bg-primary" id="itemCount">1 item</span>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info py-2 mb-3">
+                <i class="fa fa-circle-info me-2"></i>Measurements are rounded up to the nearest half foot for billing.
+            </div>
+            <div id="items"></div>
+            <button type="button" id="addRow" class="btn btn-outline-primary w-100 mt-3">
+                <i class="fa fa-plus me-2"></i>Add item
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card h-100">
+                <div class="card-header"><h5 class="mb-0"><i class="fa fa-note-sticky me-2"></i>Notes</h5></div>
+                <div class="card-body">
+                    <label class="form-label" for="notes">Customer notes or quotation terms</label>
+                    <textarea name="notes" id="notes" rows="7" class="form-control" placeholder="Add installation details, delivery terms, exclusions, or other information..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card h-100">
+                <div class="card-header"><h5 class="mb-0"><i class="fa fa-calculator me-2"></i>Summary</h5></div>
+                <div class="card-body">
+                    <div class="quote-summary-row">
+                        <span class="text-body-secondary">Subtotal</span>
+                        <strong><span id="subtotalText">0.00</span> MMK</strong>
+                    </div>
+                    <div class="my-3">
+                        <label class="form-label" for="discount">Discount</label>
+                        <div class="input-group">
+                            <input type="number" min="0" step="500" name="discount" id="discount" class="form-control" placeholder="0">
+                            <span class="input-group-text">MMK</span>
+                        </div>
+                        <div class="invalid-feedback">Discount cannot be more than the subtotal.</div>
+                    </div>
+                    <div class="quote-summary-row quote-summary-total">
+                        <span>Total</span>
+                        <strong class="text-primary"><span id="totalText">0.00</span> MMK</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="quote-actions d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
+        <a href="index.php" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary px-4">
+            <i class="fa fa-save me-2"></i>Save quotation
+        </button>
+    </div>
 </form>
-<template id="itemTemplate"><tr><td><select name="factory_product_id[]" class="form-select product" required><option value="">Choose product</option><?php while($p=$factory->fetch_assoc()):?><option value="<?=$p['id'];?>" data-price="<?=$p['default_price'];?>"><?=htmlspecialchars($p['product_name']);?></option><?php endwhile;?></select><input name="description[]" class="form-control mt-2" placeholder="Description (optional)"></td><td><input type="number" min="0" step="0.5" name="width_mm[]" class="form-control width" required></td><td><input type="number" min="0" step="0.5" name="height_mm[]" class="form-control height" required></td><td><input type="number" min="1" name="quantity[]" value="1" class="form-control qty" required></td><td><span class="sqft">0.00</span><input type="hidden" name="sqft[]" class="sqftInput"></td><td><input type="number" min="0" step="500" name="unit_price[]" class="form-control rate" required></td><td class="fw-bold"><span class="lineTotal">0.00</span><input type="hidden" name="line_total[]" class="lineTotalInput"></td><td><button type="button" class="btn btn-sm btn-outline-danger remove"><i class="fa fa-times"></i></button></td></tr></template>
+
+<template id="itemTemplate">
+    <section class="quote-item">
+        <div class="quote-item-head">
+            <strong><span class="quote-item-number">1</span>Item <span class="item-label">1</span></strong>
+            <button type="button" class="btn btn-sm btn-outline-danger remove" title="Delete item">
+                <i class="fa fa-trash me-1"></i><span class="d-none d-sm-inline">Delete</span>
+            </button>
+        </div>
+        <div class="table-responsive">
+            <table class="table quote-table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th class="quote-product-cell">Product</th>
+                        <th class="quote-measure-cell">Width (mm)</th>
+                        <th class="quote-measure-cell">Height (mm)</th>
+                        <th class="quote-qty-cell">Qty</th>
+                        <th class="quote-total-cell">Billable sqft</th>
+                        <th class="quote-total-cell">Price / sqft</th>
+                        <th class="quote-total-cell">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="quote-product-cell">
+                            <div class="product-picker">
+                                <input type="search" class="form-control product-search" placeholder="Search factory product..." autocomplete="off" required>
+                                <input type="hidden" name="factory_product_id[]" class="product-id">
+                                <div class="product-results" role="listbox"></div>
+                            </div>
+                            <input name="description[]" class="form-control mt-2" placeholder="Description (optional)">
+                        </td>
+                        <td><input type="number" min="0.5" step="0.5" name="width_mm[]" class="form-control width" placeholder="0" required></td>
+                        <td><input type="number" min="0.5" step="0.5" name="height_mm[]" class="form-control height" placeholder="0" required></td>
+                        <td><input type="number" min="1" step="1" name="quantity[]" value="1" class="form-control qty" required></td>
+                        <td>
+                            <strong class="sqft">0.00</strong>
+                            <input type="hidden" name="sqft[]" class="sqftInput">
+                            <small class="selling-size d-block text-body-secondary mt-1">0 ft × 0 ft</small>
+                        </td>
+                        <td><input type="number" min="0" step="500" name="unit_price[]" class="form-control rate" placeholder="0" required></td>
+                        <td>
+                            <strong><span class="lineTotal">0.00</span></strong>
+                            <input type="hidden" name="line_total[]" class="lineTotalInput">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</template>
+
 <script>
-(()=>{const body=document.getElementById('items'),template=document.getElementById('itemTemplate'),discount=document.getElementById('discount');
-function total(){let sum=0;body.querySelectorAll('.lineTotalInput').forEach(i=>sum+=Number(i.value)||0);document.getElementById('subtotalText').textContent=sum.toFixed(2);document.getElementById('totalText').textContent=Math.max(0,sum-(Number(discount.value)||0)).toFixed(2)}
-function calc(row){const w=Number(row.querySelector('.width').value)||0,h=Number(row.querySelector('.height').value)||0,q=Number(row.querySelector('.qty').value)||0,rate=Number(row.querySelector('.rate').value)||0;const wf=Math.ceil((w/304.8)*2)/2,hf=Math.ceil((h/304.8)*2)/2,sq=wf*hf*q,line=sq*rate;row.querySelector('.sqft').textContent=sq.toFixed(2);row.querySelector('.sqftInput').value=sq.toFixed(2);row.querySelector('.lineTotal').textContent=line.toFixed(2);row.querySelector('.lineTotalInput').value=line.toFixed(2);total()}
-function add(){const row=template.content.firstElementChild.cloneNode(true);row.addEventListener('input',()=>calc(row));row.querySelector('.product').addEventListener('change',e=>{row.querySelector('.rate').value=e.target.selectedOptions[0]?.dataset.price||0;calc(row)});row.querySelector('.remove').addEventListener('click',()=>{row.remove();total()});body.appendChild(row)}
-document.getElementById('addRow').addEventListener('click',add);discount.addEventListener('input',total);add();})();
+(() => {
+    const products = <?= json_encode($factoryProducts, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    const items = document.getElementById('items');
+    const template = document.getElementById('itemTemplate');
+    const discount = document.getElementById('discount');
+    const form = document.getElementById('quoteForm');
+    const money = new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const closeProductResults = (except = null) => {
+        items.querySelectorAll('.product-results.show').forEach((box) => {
+            if (box !== except) box.classList.remove('show');
+        });
+    };
+
+    const updateItemNumbers = () => {
+        const rows = [...items.querySelectorAll('.quote-item')];
+        rows.forEach((row, index) => {
+            row.querySelector('.quote-item-number').textContent = index + 1;
+            row.querySelector('.item-label').textContent = index + 1;
+            row.querySelector('.remove').disabled = rows.length === 1;
+        });
+        document.getElementById('itemCount').textContent = `${rows.length} ${rows.length === 1 ? 'item' : 'items'}`;
+    };
+
+    const calculateTotals = () => {
+        let subtotal = 0;
+        items.querySelectorAll('.lineTotalInput').forEach((input) => {
+            subtotal += Number(input.value) || 0;
+        });
+        const discountValue = Number(discount.value) || 0;
+        const discountInvalid = discountValue > subtotal && discountValue > 0;
+        discount.classList.toggle('is-invalid', discountInvalid);
+        discount.setCustomValidity(discountInvalid ? 'Discount cannot be more than the subtotal.' : '');
+        document.getElementById('subtotalText').textContent = money.format(subtotal);
+        document.getElementById('totalText').textContent = money.format(Math.max(0, subtotal - discountValue));
+    };
+
+    const calculateRow = (row) => {
+        const width = Number(row.querySelector('.width').value) || 0;
+        const height = Number(row.querySelector('.height').value) || 0;
+        const quantity = Number(row.querySelector('.qty').value) || 0;
+        const rate = Number(row.querySelector('.rate').value) || 0;
+        const widthFeet = Math.ceil((width / 304.8) * 2) / 2;
+        const heightFeet = Math.ceil((height / 304.8) * 2) / 2;
+        const squareFeet = widthFeet * heightFeet * quantity;
+        const lineTotal = squareFeet * rate;
+        row.querySelector('.sqft').textContent = squareFeet.toFixed(2);
+        row.querySelector('.sqftInput').value = squareFeet.toFixed(2);
+        row.querySelector('.selling-size').textContent = `${widthFeet.toFixed(1)} ft × ${heightFeet.toFixed(1)} ft`;
+        row.querySelector('.lineTotal').textContent = money.format(lineTotal);
+        row.querySelector('.lineTotalInput').value = lineTotal.toFixed(2);
+        calculateTotals();
+    };
+
+    const chooseProduct = (row, product) => {
+        const search = row.querySelector('.product-search');
+        search.value = product.name;
+        search.setCustomValidity('');
+        row.querySelector('.product-id').value = product.id;
+        row.querySelector('.rate').value = product.price > 0 ? product.price : '';
+        row.querySelector('.product-results').classList.remove('show');
+        calculateRow(row);
+    };
+
+    const showProductResults = (row) => {
+        const search = row.querySelector('.product-search');
+        const resultBox = row.querySelector('.product-results');
+        const query = search.value.trim().toLocaleLowerCase();
+        const matches = products.filter((product) => !query || product.name.toLocaleLowerCase().includes(query)).slice(0, 10);
+        resultBox.replaceChildren();
+        if (!matches.length) {
+            const empty = document.createElement('div');
+            empty.className = 'p-3 text-body-secondary small';
+            empty.textContent = 'No matching factory product found.';
+            resultBox.appendChild(empty);
+        } else {
+            matches.forEach((product) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'product-result';
+                const name = document.createElement('span');
+                name.textContent = product.name;
+                const price = document.createElement('span');
+                price.className = 'product-result-price';
+                price.textContent = product.price > 0 ? `${money.format(product.price)} / sqft` : 'No default price';
+                button.append(name, price);
+                button.addEventListener('click', () => chooseProduct(row, product));
+                resultBox.appendChild(button);
+            });
+        }
+        closeProductResults(resultBox);
+        resultBox.classList.add('show');
+    };
+
+    const addItem = () => {
+        const row = template.content.firstElementChild.cloneNode(true);
+        const search = row.querySelector('.product-search');
+        row.querySelectorAll('.width, .height, .qty, .rate').forEach((input) => {
+            input.addEventListener('input', () => calculateRow(row));
+        });
+        search.addEventListener('focus', () => showProductResults(row));
+        search.addEventListener('input', () => {
+            row.querySelector('.product-id').value = '';
+            search.setCustomValidity('Please choose a product from the search results.');
+            showProductResults(row);
+        });
+        row.querySelector('.remove').addEventListener('click', () => {
+            row.remove();
+            updateItemNumbers();
+            calculateTotals();
+        });
+        items.appendChild(row);
+        updateItemNumbers();
+        calculateRow(row);
+    };
+
+    document.getElementById('addRow').addEventListener('click', addItem);
+    discount.addEventListener('input', calculateTotals);
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('.product-picker')) closeProductResults();
+    });
+    form.addEventListener('submit', (event) => {
+        let firstInvalidProduct = null;
+        items.querySelectorAll('.quote-item').forEach((row) => {
+            const search = row.querySelector('.product-search');
+            if (!row.querySelector('.product-id').value) {
+                search.setCustomValidity('Please choose a product from the search results.');
+                firstInvalidProduct ||= search;
+            } else {
+                search.setCustomValidity('');
+            }
+        });
+        calculateTotals();
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            form.classList.add('was-validated');
+            (firstInvalidProduct || form.querySelector(':invalid'))?.focus();
+        }
+    });
+    addItem();
+})();
 </script>
-<?php require_once __DIR__.'/../includes/footer.php';?>
+
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
