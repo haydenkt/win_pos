@@ -655,7 +655,7 @@ readonly>
 
 <input type="number"
 
-step="500"
+step="50"
 
 name="price[]"
 
@@ -677,7 +677,7 @@ class="form-control price">
 
 <input type="number"
 
-step="500"
+step="50"
 
 name="unit_price[]"
 
@@ -1373,7 +1373,7 @@ Installation Cost
 
 <input type="number"
 
-step="500"
+step="50"
 
 name="installation_cost"
 

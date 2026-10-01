@@ -153,7 +153,7 @@ Purchase Price
 
 
 <input type="number"
-step="500"
+step="50"
 name="purchase_price"
 class="form-control"
 value="0">
@@ -174,7 +174,7 @@ Selling Price
 
 
 <input type="number"
-step="500"
+step="50"
 name="selling_price"
 class="form-control"
 value="0">

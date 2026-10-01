@@ -643,7 +643,7 @@ type="number"
 name="cost_price[]"
 class="form-control"
 min="0"
-step="500"
+step="50"
 value="0"
 >
 

@@ -208,7 +208,7 @@ Daily Pay
 
 name="daily_rate"
 
-step="500"
+step="50"
 
 class="form-control"
 

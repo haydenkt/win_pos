@@ -671,11 +671,11 @@ MANUAL
 </td>
 
 <td>
-<input type="number" step="500" min="0" name="price[]" class="form-control price-per-sqft" value="<?=htmlspecialchars((string) $price_per_sqft);?>">
+<input type="number" step="50" min="0" name="price[]" class="form-control price-per-sqft" value="<?=htmlspecialchars((string) $price_per_sqft);?>">
 </td>
 
 <td>
-<input type="number" step="500" min="0" name="unit_price[]" class="form-control unit-price" value="<?=htmlspecialchars((string) $unit_price);?>">
+<input type="number" step="50" min="0" name="unit_price[]" class="form-control unit-price" value="<?=htmlspecialchars((string) $unit_price);?>">
 </td>
 
 <td>

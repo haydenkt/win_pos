@@ -234,7 +234,7 @@ Purchase Price
 
 
 <input type="number"
-step="500"
+step="50"
 name="purchase_price"
 class="form-control"
 value="<?=$product['purchase_price'];?>">
@@ -255,7 +255,7 @@ Selling Price
 
 
 <input type="number"
-step="500"
+step="50"
 name="selling_price"
 class="form-control"
 value="<?=$product['selling_price'];?>">

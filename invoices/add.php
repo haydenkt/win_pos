@@ -777,7 +777,7 @@ if ($glassTypes) {
                         <input
                             type="number"
                             min="0"
-                            step="500"
+                            step="50"
                             name="installation_cost"
                             id="installation_cost"
                             class="form-control"
@@ -1734,7 +1734,7 @@ function sqftCells(state)
             <input
                 type="number"
                 min="0"
-                step="500"
+                step="50"
                 class="form-control base-price"
                 value="${escapeHtml(
                     state.basePrice
@@ -1894,7 +1894,7 @@ function manualCells(state)
             ${input(
                 'price',
                 state.price || '',
-                'min="0" step="500" required'
+                'min="0" step="50" required'
             )}
 
         </td>

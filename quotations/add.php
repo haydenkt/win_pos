@@ -326,7 +326,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                             <input type="hidden" name="sqft[]" class="sqftInput">
                             <small class="selling-size d-block text-body-secondary mt-1">0 ft × 0 ft</small>
                         </td>
-                        <td><input type="number" min="0" step="500" name="unit_price[]" class="form-control rate" placeholder="0" required></td>
+                        <td><input type="number" min="0" step="50" name="unit_price[]" class="form-control rate" placeholder="0" required></td>
                         <td>
                             <strong><span class="lineTotal">0.00</span></strong>
                             <input type="hidden" name="line_total[]" class="lineTotalInput">
