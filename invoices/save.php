@@ -723,40 +723,18 @@ if (!empty($initial_payments)) {
     function convertMMtoFT($mm)
     {
 
-        $ft =
-            $mm / 304.8;
-
-
-        if ($ft <= 0) {
+        if ($mm <= 0) {
 
             return 0;
 
         }
 
 
-        $whole =
-            floor($ft);
-
-
-        $decimal =
-            $ft - $whole;
-
-
-        if ($decimal < 0.1) {
-
-            return $whole;
-
-        }
-        elseif ($decimal <= 0.5) {
-
-            return $whole + 0.5;
-
-        }
-        else {
-
-            return $whole + 1;
-
-        }
+        // Always round upward to the next half foot.
+        // The tiny epsilon keeps an exact 3.5 from becoming 4.0
+        // because of floating-point conversion noise.
+        $feet = $mm / 304.8;
+        return ceil(($feet * 2) - 1.0e-9) / 2;
 
     }
 

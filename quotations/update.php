@@ -78,8 +78,8 @@ try {
             throw new RuntimeException('A selected factory product was not found.');
         }
 
-        $widthFeet = ceil(($width / 304.8) * 2) / 2;
-        $heightFeet = ceil(($height / 304.8) * 2) / 2;
+        $widthFeet = ceil((($width / 304.8) * 2) - 1.0e-9) / 2;
+        $heightFeet = ceil((($height / 304.8) * 2) - 1.0e-9) / 2;
         $squareFeet = $widthFeet * $heightFeet * $quantity;
         $lineTotal = $squareFeet * $unitPrice;
         $items[] = [$productId, $product['product_name'], $description, $width, $height, $quantity, $squareFeet, $unitPrice, $lineTotal];

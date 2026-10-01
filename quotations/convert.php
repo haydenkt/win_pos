@@ -85,8 +85,8 @@ try {
 
         $insert = $conn->prepare("INSERT INTO order_items (order_id,factory_product_id,product_name,width_mm,height_mm,width_ft,height_ft,calculation_type,quantity,sqft,description,final_price_per_sqft) VALUES (?,?,?,?,?,?,?,'SQFT',?,?,?,?)");
         while ($item = $items->fetch_assoc()) {
-            $widthFt = ceil(($item['width_mm'] / 304.8) * 2) / 2;
-            $heightFt = ceil(($item['height_mm'] / 304.8) * 2) / 2;
+            $widthFt = ceil((($item['width_mm'] / 304.8) * 2) - 1.0e-9) / 2;
+            $heightFt = ceil((($item['height_mm'] / 304.8) * 2) - 1.0e-9) / 2;
             $insert->bind_param('iisddddidsd', $newId, $item['factory_product_id'], $item['product_name'], $item['width_mm'], $item['height_mm'], $widthFt, $heightFt, $item['quantity'], $item['sqft'], $item['description'], $item['unit_price']);
             $insert->execute();
         }

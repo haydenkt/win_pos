@@ -2453,11 +2453,17 @@ function calculateItem(item)
         ) {
 
             widthFt =
-                width / 304.8;
+                Math.ceil(
+                    ((width / 304.8) * 2)
+                    - 1e-9
+                ) / 2;
 
 
             heightFt =
-                height / 304.8;
+                Math.ceil(
+                    ((height / 304.8) * 2)
+                    - 1e-9
+                ) / 2;
 
         }
 
