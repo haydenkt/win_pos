@@ -20,11 +20,68 @@ while ($product = $factoryResult->fetch_assoc()) {
     ];
 }
 
+$editId = (int) ($_GET['id'] ?? 0);
+$isEdit = $editId > 0;
+$quotation = [
+    'customer_id' => 0,
+    'quote_date' => date('Y-m-d'),
+    'valid_until' => date('Y-m-d', strtotime('+30 days')),
+    'discount' => '',
+    'notes' => '',
+];
+$initialItems = [];
+
+if ($isEdit) {
+    $stmt = $conn->prepare("SELECT * FROM quotations WHERE id=? AND status<>'Converted'");
+    $stmt->bind_param('i', $editId);
+    $stmt->execute();
+    $savedQuotation = $stmt->get_result()->fetch_assoc();
+
+    if (!$savedQuotation) {
+        $_SESSION['error'] = 'This quotation cannot be edited because it is missing or already converted.';
+        header('Location:index.php');
+        exit;
+    }
+
+    $quotation = $savedQuotation;
+    $stmt = $conn->prepare('SELECT * FROM quotation_items WHERE quotation_id=? ORDER BY id');
+    $stmt->bind_param('i', $editId);
+    $stmt->execute();
+    $savedItems = $stmt->get_result();
+
+    while ($item = $savedItems->fetch_assoc()) {
+        $initialItems[] = [
+            'productId' => (int) $item['factory_product_id'],
+            'productName' => $item['product_name'],
+            'description' => $item['description'],
+            'width' => (float) $item['width_mm'],
+            'height' => (float) $item['height_mm'],
+            'quantity' => (int) $item['quantity'],
+            'rate' => (float) $item['unit_price'],
+        ];
+
+        $knownProduct = false;
+        foreach ($factoryProducts as $factoryProduct) {
+            if ($factoryProduct['id'] === (int) $item['factory_product_id']) {
+                $knownProduct = true;
+                break;
+            }
+        }
+        if (!$knownProduct) {
+            $factoryProducts[] = [
+                'id' => (int) $item['factory_product_id'],
+                'name' => $item['product_name'],
+                'price' => (float) $item['unit_price'],
+            ];
+        }
+    }
+}
+
 if (empty($_SESSION['quotation_csrf'])) {
     $_SESSION['quotation_csrf'] = bin2hex(random_bytes(32));
 }
 
-$page_title = 'New quotation';
+$page_title = $isEdit ? 'Edit quotation' : 'New quotation';
 require_once __DIR__ . '/../includes/header.php';
 require_once __DIR__ . '/../includes/sidebar.php';
 ?>
@@ -118,8 +175,8 @@ require_once __DIR__ . '/../includes/sidebar.php';
         <a href="index.php" class="btn btn-sm btn-outline-secondary mb-3">
             <i class="fa fa-arrow-left me-1"></i> Back to quotations
         </a>
-        <h1 class="page-title">New quotation</h1>
-        <p class="page-subtitle">Prepare a professional estimate with automatic square-foot pricing.</p>
+        <h1 class="page-title"><?= $isEdit ? 'Edit ' . htmlspecialchars($quotation['quote_no']) : 'New quotation'; ?></h1>
+        <p class="page-subtitle"><?= $isEdit ? 'Update the customer, measurements, prices, or notes.' : 'Prepare a professional estimate with automatic square-foot pricing.'; ?></p>
     </div>
 </div>
 
@@ -130,8 +187,14 @@ require_once __DIR__ . '/../includes/sidebar.php';
     </div>
 <?php endif; ?>
 
-<form action="save.php" method="post" id="quoteForm">
+<div class="alert alert-success d-none" id="heldNotice" role="status">
+    <i class="fa fa-pause-circle me-2"></i>Quotation held safely on this device. You can leave this page and continue later.
+</div>
+
+<form action="<?= $isEdit ? 'update.php' : 'save.php'; ?>" method="post" id="quoteForm">
     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['quotation_csrf']); ?>">
+    <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= $editId; ?>"><?php endif; ?>
+    <input type="hidden" name="draft_key" value="<?= $isEdit ? 'win_pos_quotation_draft_' . $editId : 'win_pos_quotation_draft_new'; ?>">
 
     <div class="card mb-4">
         <div class="card-header">
@@ -144,7 +207,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <select name="customer_id" id="customer_id" class="form-select" required>
                         <option value="">Choose customer</option>
                         <?php while ($customer = $customers->fetch_assoc()): ?>
-                            <option value="<?= (int) $customer['id']; ?>">
+                            <option value="<?= (int) $customer['id']; ?>" <?= (int) $quotation['customer_id'] === (int) $customer['id'] ? 'selected' : ''; ?>>
                                 <?= htmlspecialchars($customer['name'] . ($customer['phone'] ? ' · ' . $customer['phone'] : '')); ?>
                             </option>
                         <?php endwhile; ?>
@@ -152,11 +215,11 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <label class="form-label" for="quote_date">Quotation date <span class="text-danger">*</span></label>
-                    <input type="date" name="quote_date" id="quote_date" value="<?= date('Y-m-d'); ?>" class="form-control" required>
+                    <input type="date" name="quote_date" id="quote_date" value="<?= htmlspecialchars((string) $quotation['quote_date']); ?>" class="form-control" required>
                 </div>
                 <div class="col-md-6 col-lg-3">
                     <label class="form-label" for="valid_until">Valid until</label>
-                    <input type="date" name="valid_until" id="valid_until" value="<?= date('Y-m-d', strtotime('+30 days')); ?>" class="form-control">
+                    <input type="date" name="valid_until" id="valid_until" value="<?= htmlspecialchars((string) $quotation['valid_until']); ?>" class="form-control">
                 </div>
             </div>
         </div>
@@ -184,7 +247,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 <div class="card-header"><h5 class="mb-0"><i class="fa fa-note-sticky me-2"></i>Notes</h5></div>
                 <div class="card-body">
                     <label class="form-label" for="notes">Customer notes or quotation terms</label>
-                    <textarea name="notes" id="notes" rows="7" class="form-control" placeholder="Add installation details, delivery terms, exclusions, or other information..."></textarea>
+                    <textarea name="notes" id="notes" rows="7" class="form-control" placeholder="Add installation details, delivery terms, exclusions, or other information..."><?= htmlspecialchars((string) $quotation['notes']); ?></textarea>
                 </div>
             </div>
         </div>
@@ -199,7 +262,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <div class="my-3">
                         <label class="form-label" for="discount">Discount</label>
                         <div class="input-group">
-                            <input type="number" min="0" step="500" name="discount" id="discount" class="form-control" placeholder="0">
+                            <input type="number" min="0" step="500" name="discount" id="discount" class="form-control" placeholder="0" value="<?= (float) $quotation['discount'] > 0 ? htmlspecialchars((string) $quotation['discount']) : ''; ?>">
                             <span class="input-group-text">MMK</span>
                         </div>
                         <div class="invalid-feedback">Discount cannot be more than the subtotal.</div>
@@ -215,8 +278,11 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
     <div class="quote-actions d-flex flex-column flex-sm-row justify-content-end gap-2 mt-4">
         <a href="index.php" class="btn btn-outline-secondary">Cancel</a>
+        <button type="button" class="btn btn-warning" id="holdQuotation">
+            <i class="fa fa-pause me-2"></i><?= $isEdit ? 'Hold changes' : 'Hold quotation'; ?>
+        </button>
         <button type="submit" class="btn btn-primary px-4">
-            <i class="fa fa-save me-2"></i>Save quotation
+            <i class="fa fa-save me-2"></i><?= $isEdit ? 'Update quotation' : 'Save quotation'; ?>
         </button>
     </div>
 </form>
@@ -275,6 +341,8 @@ require_once __DIR__ . '/../includes/sidebar.php';
 <script>
 (() => {
     const products = <?= json_encode($factoryProducts, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    const initialItems = <?= json_encode($initialItems, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+    const draftKey = <?= json_encode($isEdit ? 'win_pos_quotation_draft_' . $editId : 'win_pos_quotation_draft_new'); ?>;
     const items = document.getElementById('items');
     const template = document.getElementById('itemTemplate');
     const discount = document.getElementById('discount');
@@ -367,7 +435,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         resultBox.classList.add('show');
     };
 
-    const addItem = () => {
+    const addItem = (data = {}) => {
         const row = template.content.firstElementChild.cloneNode(true);
         const search = row.querySelector('.product-search');
         row.querySelectorAll('.width, .height, .qty, .rate').forEach((input) => {
@@ -385,11 +453,60 @@ require_once __DIR__ . '/../includes/sidebar.php';
             calculateTotals();
         });
         items.appendChild(row);
+
+        const selectedProduct = products.find((product) => Number(product.id) === Number(data.productId));
+        if (selectedProduct) {
+            chooseProduct(row, selectedProduct);
+        } else if (data.productId) {
+            row.querySelector('.product-id').value = data.productId;
+            search.value = data.productName || '';
+            search.setCustomValidity('');
+        }
+        row.querySelector('[name="description[]"]').value = data.description || '';
+        row.querySelector('.width').value = data.width || '';
+        row.querySelector('.height').value = data.height || '';
+        row.querySelector('.qty').value = data.quantity || 1;
+        row.querySelector('.rate').value = data.rate || '';
+
         updateItemNumbers();
         calculateRow(row);
     };
 
-    document.getElementById('addRow').addEventListener('click', addItem);
+    const collectDraft = () => ({
+        customerId: document.getElementById('customer_id').value,
+        quoteDate: document.getElementById('quote_date').value,
+        validUntil: document.getElementById('valid_until').value,
+        notes: document.getElementById('notes').value,
+        discount: discount.value,
+        items: [...items.querySelectorAll('.quote-item')].map((row) => ({
+            productId: row.querySelector('.product-id').value,
+            productName: row.querySelector('.product-search').value,
+            description: row.querySelector('[name="description[]"]').value,
+            width: row.querySelector('.width').value,
+            height: row.querySelector('.height').value,
+            quantity: row.querySelector('.qty').value,
+            rate: row.querySelector('.rate').value,
+        })),
+        heldAt: new Date().toISOString(),
+    });
+
+    const loadDraft = (draft) => {
+        document.getElementById('customer_id').value = draft.customerId || '';
+        document.getElementById('quote_date').value = draft.quoteDate || '';
+        document.getElementById('valid_until').value = draft.validUntil || '';
+        document.getElementById('notes').value = draft.notes || '';
+        discount.value = draft.discount || '';
+        items.replaceChildren();
+        (draft.items?.length ? draft.items : [{}]).forEach(addItem);
+        calculateTotals();
+    };
+
+    document.getElementById('addRow').addEventListener('click', () => addItem());
+    document.getElementById('holdQuotation').addEventListener('click', () => {
+        localStorage.setItem(draftKey, JSON.stringify(collectDraft()));
+        document.getElementById('heldNotice').classList.remove('d-none');
+        document.getElementById('heldNotice').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
     discount.addEventListener('input', calculateTotals);
     document.addEventListener('click', (event) => {
         if (!event.target.closest('.product-picker')) closeProductResults();
@@ -413,7 +530,21 @@ require_once __DIR__ . '/../includes/sidebar.php';
             (firstInvalidProduct || form.querySelector(':invalid'))?.focus();
         }
     });
-    addItem();
+    let heldDraft = null;
+    try {
+        heldDraft = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    } catch (error) {
+        localStorage.removeItem(draftKey);
+    }
+
+    if (heldDraft) {
+        loadDraft(heldDraft);
+        document.getElementById('heldNotice').classList.remove('d-none');
+    } else if (initialItems.length) {
+        initialItems.forEach(addItem);
+    } else {
+        addItem();
+    }
 })();
 </script>
 

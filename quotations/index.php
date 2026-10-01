@@ -7,6 +7,9 @@ if (!isset($_SESSION['user'])) {
 require_once __DIR__.'/../config/database.php';
 require_once __DIR__.'/../includes/permissions.php';
 requirePermission('quotations_view');
+if (empty($_SESSION['quotation_csrf'])) {
+    $_SESSION['quotation_csrf'] = bin2hex(random_bytes(32));
+}
 $rows = $conn->query('SELECT q.*, c.name customer_name FROM quotations q JOIN customers c ON c.id=q.customer_id ORDER BY q.id DESC');
 $page_title = 'Quotations';
 require_once __DIR__.'/../includes/header.php';
@@ -31,7 +34,7 @@ require_once __DIR__.'/../includes/sidebar.php';
 <div class="card">
     <div class="table-responsive">
         <table class="table table-hover align-middle">
-            <thead><tr><th>Quotation</th><th>Customer</th><th>Date</th><th>Valid until</th><th>Status</th><th class="text-end">Total</th><th></th></tr></thead>
+            <thead><tr><th>Quotation</th><th>Customer</th><th>Date</th><th>Valid until</th><th>Status</th><th class="text-end">Total</th><th class="text-end">Actions</th></tr></thead>
             <tbody>
             <?php if ($rows->num_rows === 0): ?>
                 <tr><td colspan="7"><div class="empty-state">No quotations found.</div></td></tr>
@@ -46,7 +49,15 @@ require_once __DIR__.'/../includes/sidebar.php';
                     <td class="text-end fw-bold"><?=number_format((float)$row['total'], 2);?></td>
                     <td class="text-end text-nowrap">
                         <a href="print.php?id=<?=$row['id'];?>" target="_blank" class="btn btn-sm btn-light" title="Print quotation"><i class="fa fa-print"></i></a>
-                        <a href="view.php?id=<?=$row['id'];?>" class="btn btn-sm btn-light">View</a>
+                        <a href="view.php?id=<?=$row['id'];?>" class="btn btn-sm btn-info" title="View quotation"><i class="fa fa-eye"></i></a>
+                        <?php if (hasPermission('quotations_manage') && $row['status'] !== 'Converted'): ?>
+                            <a href="add.php?id=<?=$row['id'];?>" class="btn btn-sm btn-primary" title="Edit quotation"><i class="fa fa-pen"></i></a>
+                            <form action="delete.php" method="post" class="d-inline" onsubmit="return confirm('Delete this quotation? This cannot be undone.');">
+                                <input type="hidden" name="csrf_token" value="<?=htmlspecialchars($_SESSION['quotation_csrf']);?>">
+                                <input type="hidden" name="id" value="<?=(int)$row['id'];?>">
+                                <button type="submit" class="btn btn-sm btn-danger" title="Delete quotation"><i class="fa fa-trash"></i></button>
+                            </form>
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endwhile; ?>
