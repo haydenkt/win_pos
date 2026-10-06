@@ -9,6 +9,7 @@ if (!isset($_SESSION['user'])) {
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/permissions.php';
 require_once __DIR__ . '/../includes/audit.php';
+require_once __DIR__ . '/items.php';
 requirePermission('quotations_manage');
 
 $id = (int) ($_POST['id'] ?? 0);
@@ -74,21 +75,23 @@ try {
     $stmt = $conn->prepare('SELECT * FROM quotation_items WHERE quotation_id=? ORDER BY id');
     $stmt->bind_param('i', $id);
     $stmt->execute();
-    $items = $stmt->get_result();
+    $items = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    if (!$items) throw new RuntimeException('This quotation has no items to convert.');
 
     if ($target === 'order') {
+        foreach ($items as $item) {
+            if (($item['item_type'] ?? 'ORDER') !== 'ORDER') {
+                throw new RuntimeException('This quotation contains sale or service items. Convert it to an invoice to retain all items.');
+            }
+        }
         $status = 'Quotation';
         $stmt = $conn->prepare('INSERT INTO orders (invoice_no,customer_id,order_status,notes) VALUES (?,?,?,?)');
         $stmt->bind_param('siss', $quotation['quote_no'], $quotation['customer_id'], $status, $quotation['notes']);
         $stmt->execute();
         $newId = $conn->insert_id;
 
-        $insert = $conn->prepare("INSERT INTO order_items (order_id,factory_product_id,product_name,width_mm,height_mm,width_ft,height_ft,calculation_type,quantity,sqft,description,final_price_per_sqft) VALUES (?,?,?,?,?,?,?,'SQFT',?,?,?,?)");
-        while ($item = $items->fetch_assoc()) {
-            $widthFt = ceil((($item['width_mm'] / 304.8) * 2) - 1.0e-9) / 2;
-            $heightFt = ceil((($item['height_mm'] / 304.8) * 2) - 1.0e-9) / 2;
-            $insert->bind_param('iisddddidsd', $newId, $item['factory_product_id'], $item['product_name'], $item['width_mm'], $item['height_mm'], $widthFt, $heightFt, $item['quantity'], $item['sqft'], $item['description'], $item['unit_price']);
-            $insert->execute();
+        foreach ($items as $item) {
+            quotationOrderItem($conn, $newId, $item);
         }
 
         $field = 'order_id';
@@ -106,11 +109,7 @@ try {
         $stmt->execute();
         $newId = $conn->insert_id;
 
-        $insert = $conn->prepare("INSERT INTO invoice_items (invoice_id,item_type,product_name,quantity,width_mm,height_mm,sqft,price,total,description) VALUES (?,'SERVICE',?,?,?,?,?,?,?,?)");
-        while ($item = $items->fetch_assoc()) {
-            $insert->bind_param('isiddddds', $newId, $item['product_name'], $item['quantity'], $item['width_mm'], $item['height_mm'], $item['sqft'], $item['unit_price'], $item['total'], $item['description']);
-            $insert->execute();
-        }
+        quotationInvoiceItems($conn, $newId, $invoiceNo, (int) $quotation['customer_id'], (string) $quotation['notes'], $items);
 
         if ($paymentAmount > 0) {
             $paymentType = $balance <= 0 ? 'Full Payment' : 'Deposit';

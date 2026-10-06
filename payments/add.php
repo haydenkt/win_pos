@@ -679,7 +679,7 @@ Amount
 
 <input type="number"
 
-step="500"
+step="10"
 
 name="amount"
 

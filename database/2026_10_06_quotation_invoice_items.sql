@@ -1,0 +1,12 @@
+-- Retain invoice-style item details without changing existing quotations.
+ALTER TABLE quotation_items
+    ADD COLUMN IF NOT EXISTS item_type VARCHAR(10) NOT NULL DEFAULT 'ORDER',
+    ADD COLUMN IF NOT EXISTS product_id INT NULL,
+    ADD COLUMN IF NOT EXISTS calculation_type VARCHAR(10) NOT NULL DEFAULT 'SQFT',
+    ADD COLUMN IF NOT EXISTS measurement_unit VARCHAR(2) NOT NULL DEFAULT 'MM',
+    ADD COLUMN IF NOT EXISTS width_ft DECIMAL(12,4) NULL,
+    ADD COLUMN IF NOT EXISTS height_ft DECIMAL(12,4) NULL,
+    ADD COLUMN IF NOT EXISTS base_price DECIMAL(12,2) NULL,
+    ADD COLUMN IF NOT EXISTS glass_type_id INT NULL,
+    ADD COLUMN IF NOT EXISTS glass_name VARCHAR(150) NULL,
+    ADD COLUMN IF NOT EXISTS glass_price DECIMAL(12,2) NOT NULL DEFAULT 0;

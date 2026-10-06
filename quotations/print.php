@@ -10,6 +10,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/permissions.php';
 require_once __DIR__ . '/../includes/setting.php';
 requirePermission('quotations_view');
+require_once __DIR__ . '/items.php';
 
 $id = (int) ($_GET['id'] ?? 0);
 $stmt = $conn->prepare('SELECT q.*, c.name customer_name, c.phone customer_phone, c.address customer_address FROM quotations q JOIN customers c ON c.id=q.customer_id WHERE q.id=?');
@@ -62,7 +63,18 @@ $showLogo = $companyLogo !== '' && file_exists(__DIR__ . '/../uploads/logo/' . $
         <thead><tr><th>#</th><th>Product</th><th>Dimensions</th><th class="number">Qty</th><th class="number">Sqft</th><th class="number">Rate</th><th class="number">Amount</th></tr></thead>
         <tbody>
         <?php $number = 1; while ($item = $items->fetch_assoc()): ?>
-            <tr><td><?=$number++;?></td><td><strong><?=htmlspecialchars($item['product_name']);?></strong><?php if ($item['description']): ?><span class="item-note"><?=htmlspecialchars($item['description']);?></span><?php endif; ?></td><td><?=number_format((float) $item['width_mm'], 0);?> × <?=number_format((float) $item['height_mm'], 0);?> mm</td><td class="number"><?=$item['quantity'];?></td><td class="number"><?=number_format((float) $item['sqft'], 2);?></td><td class="number"><?=number_format((float) $item['unit_price'], 2);?></td><td class="number"><?=number_format((float) $item['total'], 2);?></td></tr>
+            <?php [$widthFeet, $heightFeet] = quotationFeet($item); $manual = ($item['calculation_type'] ?? 'SQFT') === 'MANUAL'; ?>
+            <tr>
+                <td><?=$number++;?></td>
+                <td><strong><?=htmlspecialchars($item['product_name']);?></strong>
+                    <span class="item-note"><?=htmlspecialchars(($item['item_type'] ?? 'ORDER') . ' · ' . ($manual ? 'MANUAL' : 'SQFT'));?></span>
+                    <?php if (!empty($item['glass_name'])): ?><span class="item-note">Glass: <?=htmlspecialchars($item['glass_name']);?></span><?php endif; ?>
+                    <?php if ($item['description']): ?><span class="item-note"><?=htmlspecialchars($item['description']);?></span><?php endif; ?>
+                </td>
+                <td><?php if ($manual): ?>—<?php else: ?><?=number_format((float)$item['width_mm'], 2);?> × <?=number_format((float)$item['height_mm'], 2);?> mm<br><span class="item-note"><?=number_format($widthFeet, 1);?> × <?=number_format($heightFeet, 1);?> ft billable</span><?php endif; ?></td>
+                <td class="number"><?=$item['quantity'];?></td><td class="number"><?=$manual ? '—' : number_format((float)$item['sqft'], 2);?></td>
+                <td class="number"><?=number_format((float)$item['unit_price'], 2);?></td><td class="number"><?=number_format((float)$item['total'], 2);?></td>
+            </tr>
         <?php endwhile; ?>
         </tbody>
     </table>

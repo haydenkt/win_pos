@@ -9,6 +9,7 @@ if (!isset($_SESSION['user'])) {
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/permissions.php';
 requirePermission('quotations_view');
+require_once __DIR__ . '/items.php';
 
 $id = (int) ($_GET['id'] ?? 0);
 $stmt = $conn->prepare('SELECT q.*, c.name customer_name, c.phone, c.address FROM quotations q JOIN customers c ON c.id=q.customer_id WHERE q.id=?');
@@ -68,11 +69,20 @@ require_once __DIR__ . '/../includes/sidebar.php';
             <thead><tr><th>Product</th><th>Dimensions</th><th class="text-end">Qty</th><th class="text-end">Sqft</th><th class="text-end">Rate</th><th class="text-end">Total</th></tr></thead>
             <tbody>
             <?php while ($item = $items->fetch_assoc()): ?>
+                <?php
+                    [$widthFeet, $heightFeet] = quotationFeet($item);
+                    $manual = ($item['calculation_type'] ?? 'SQFT') === 'MANUAL';
+                ?>
                 <tr>
-                    <td><strong><?=htmlspecialchars($item['product_name']);?></strong><?php if ($item['description']): ?><small class="d-block text-muted"><?=htmlspecialchars($item['description']);?></small><?php endif; ?></td>
-                    <td><?=number_format((float) $item['width_mm'], 0);?> × <?=number_format((float) $item['height_mm'], 0);?> mm</td>
+                    <td><strong><?=htmlspecialchars($item['product_name']);?></strong><small class="d-block text-muted"><?=htmlspecialchars(($item['item_type'] ?? 'ORDER') . ' · ' . ($manual ? 'MANUAL' : 'SQFT'));?></small><?php if (!empty($item['glass_name'])): ?><small class="d-block text-muted">Glass: <?=htmlspecialchars($item['glass_name']);?> (+<?=number_format((float)$item['glass_price'], 2);?> / sqft)</small><?php endif; ?><?php if ($item['description']): ?><small class="d-block text-muted"><?=htmlspecialchars($item['description']);?></small><?php endif; ?></td>
+                    <td>
+                        <?php if ($manual): ?>—<?php else: ?>
+                        <?=number_format((float) $item['width_mm'], 2);?> × <?=number_format((float) $item['height_mm'], 2);?> mm
+                        <small class="d-block text-muted"><?=number_format($widthFeet, 1);?> × <?=number_format($heightFeet, 1);?> ft billable</small>
+                        <?php endif; ?>
+                    </td>
                     <td class="text-end"><?=$item['quantity'];?></td>
-                    <td class="text-end"><?=number_format((float) $item['sqft'], 2);?></td>
+                    <td class="text-end"><?=$manual ? '—' : number_format((float) $item['sqft'], 2);?></td>
                     <td class="text-end"><?=number_format((float) $item['unit_price'], 2);?></td>
                     <td class="text-end fw-bold"><?=number_format((float) $item['total'], 2);?></td>
                 </tr>

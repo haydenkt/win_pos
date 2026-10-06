@@ -25,6 +25,8 @@ $back_routes = [
     '/reports/profit.php' => ['/reports/index.php', 'Back to Reports'],
     '/factory_products/categories.php' => ['/factory_products/index.php', 'Back to Factory products'],
     '/factory_products/material_type.php' => ['/factory_products/index.php', 'Back to Factory products'],
+    '/material_calculation/setup.php' => ['/material_calculation/index.php', 'Back to Material calculation'],
+    '/supplier_prices/view.php' => ['/supplier_prices/index.php', 'Back to Supplier price lists'],
 ];
 
 if (isset($back_routes[$current_path])) {
@@ -65,6 +67,8 @@ if (empty($page_title)) {
         'orders' => 'Orders',
         'quotations' => 'Quotations',
         'factory_products' => 'Factory products',
+        'material_calculation' => 'Material calculation',
+        'supplier_prices' => 'Supplier price lists',
         'glass' => 'Glass',
         'products' => 'Products',
         'inventory' => 'Returned inventory',
@@ -100,6 +104,7 @@ $can_invoices = hasPermission('invoices_view');
 $can_orders = hasPermission('orders_view');
 $can_quotations = hasPermission('quotations_view');
 $can_factory = hasPermission('factory_view');
+$can_factory_manage = hasPermission('factory_manage');
 $can_products = hasPermission('products_view');
 $can_inventory = hasPermission('inventory_view');
 $can_returned_inventory = hasPermission('returned_inventory_view');
@@ -248,12 +253,31 @@ $user_name = trim((string) (
                     <i class="fa fa-layer-group"></i>
                     <span class="menu-text">Material types</span>
                 </a>
+
+                <a class="nav-item<?=navActive(['/material_calculation/index.php']);?>" href="/material_calculation/index.php">
+                    <i class="fa fa-calculator"></i>
+                    <span class="menu-text">Material calculation</span>
+                </a>
+
+                <?php if ($can_factory_manage) { ?>
+                    <a class="nav-item<?=navActive(['/material_calculation/setup.php']);?>" href="/material_calculation/setup.php">
+                        <i class="fa fa-sliders"></i>
+                        <span class="menu-text">Calculation setup</span>
+                    </a>
+                <?php } ?>
             </div>
         <?php } ?>
 
-        <?php if ($can_inventory || $can_products || $can_returned_inventory) { ?>
+        <?php if ($can_inventory || $can_products || $can_returned_inventory || $can_factory) { ?>
             <div class="nav-group">
                 <div class="nav-label menu-text">Inventory</div>
+
+                <?php if ($can_products || $can_factory) { ?>
+                    <a class="nav-item<?=navActive(['/supplier_prices']);?>" href="/supplier_prices/index.php">
+                        <i class="fa fa-book-open"></i>
+                        <span class="menu-text">Supplier price lists</span>
+                    </a>
+                <?php } ?>
 
                 <?php if ($can_products) { ?>
                     <a class="nav-item<?=navActive(['/products']);?>" href="/products/index.php">
