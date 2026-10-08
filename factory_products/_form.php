@@ -1,6 +1,9 @@
 <?php
 $is_edit = !empty($product);
 $form_action = $is_edit ? 'update.php' : 'save.php';
+require_once __DIR__ . '/_list_context.php';
+$listContext = factoryProductListContext($_GET);
+$listUrl = $is_edit ? factoryProductListUrl($listContext) : 'index.php';
 ?>
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
@@ -11,7 +14,7 @@ $form_action = $is_edit ? 'update.php' : 'save.php';
         </h2>
         <p class="text-muted mb-0">Set the default way this product is priced on orders and invoices.</p>
     </div>
-    <a href="index.php" class="btn btn-light"><i class="fa fa-arrow-left"></i> Back</a>
+    <a href="<?=htmlspecialchars($listUrl);?>" class="btn btn-light"><i class="fa fa-arrow-left"></i> Back</a>
 </div>
 
 <div class="card">
@@ -19,6 +22,8 @@ $form_action = $is_edit ? 'update.php' : 'save.php';
         <form method="post" action="<?=$form_action;?>">
             <?php if ($is_edit) { ?>
                 <input type="hidden" name="id" value="<?=(int) $product['id'];?>">
+                <input type="hidden" name="return_search" value="<?=htmlspecialchars($listContext['return_search']);?>">
+                <input type="hidden" name="return_status" value="<?=htmlspecialchars($listContext['return_status']);?>">
             <?php } ?>
 
             <div class="row g-4">
@@ -84,7 +89,7 @@ $form_action = $is_edit ? 'update.php' : 'save.php';
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
-                <a href="index.php" class="btn btn-light">Cancel</a>
+                <a href="<?=htmlspecialchars($listUrl);?>" class="btn btn-light">Cancel</a>
                 <button type="submit" class="btn btn-primary">
                     <i class="fa fa-check"></i> <?=$is_edit ? 'Save changes' : 'Add product';?>
                 </button>

@@ -150,7 +150,7 @@ include '../includes/sidebar.php';
                                 </span>
                             </td>
                             <td class="text-end text-nowrap">
-                                <a href="edit.php?id=<?=(int) $product['id'];?>" class="btn btn-sm btn-outline-primary">
+                                <a href="edit.php?<?=htmlspecialchars(http_build_query(['id' => (int) $product['id'], 'return_search' => $search, 'return_status' => $status]));?>" class="btn btn-sm btn-outline-primary">
                                     <i class="fa fa-pen"></i> Edit
                                 </a>
                                 <?php if ($can_manage) { ?>

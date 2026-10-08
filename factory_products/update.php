@@ -17,6 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $id = (int) ($_POST['id'] ?? 0);
+require_once __DIR__ . '/_list_context.php';
+$listContext = factoryProductListContext($_POST);
+$listUrl = factoryProductListUrl($listContext);
+$editUrl = 'edit.php?' . http_build_query(['id' => $id] + $listContext);
 $product_name = trim((string) ($_POST['product_name'] ?? ''));
 $category_id = (int) ($_POST['category_id'] ?? 0);
 $material_type_id = (int) ($_POST['material_type_id'] ?? 0);
@@ -27,7 +31,7 @@ $notes = trim((string) ($_POST['notes'] ?? ''));
 
 if ($id <= 0 || $product_name === '' || !in_array($calculation_type, ['SQFT', 'MANUAL'], true) || !in_array($status, ['Active', 'Inactive'], true)) {
     $_SESSION['error'] = 'Please enter valid factory product details.';
-    header('Location:' . ($id > 0 ? 'edit.php?id=' . $id : 'index.php'));
+    header('Location:' . ($id > 0 ? $editUrl : $listUrl));
     exit();
 }
 
@@ -48,10 +52,10 @@ $stmt->bind_param('iissdssi', $category_id, $material_type_id, $product_name, $c
 
 if ($stmt->execute()) {
     $_SESSION['success'] = 'Factory product updated.';
-    header('Location:index.php');
+    header('Location:' . $listUrl);
 } else {
     $_SESSION['error'] = 'The factory product could not be updated.';
-    header('Location:edit.php?id=' . $id);
+    header('Location:' . $editUrl);
 }
 
 $stmt->close();
