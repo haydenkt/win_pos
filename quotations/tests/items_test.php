@@ -82,6 +82,24 @@ try {
     quotationInsertItems($conn, $quoteId, [$items[2]]);
     $stmt = $conn->prepare('SELECT COUNT(*) n FROM quotation_items WHERE quotation_id=?');
     $stmt->execute([$quoteId]); check((int)$stmt->get_result()->fetch_assoc()['n'] === 1, 'Edit replaces items');
+    $largePost = [
+        'item_type' => array_fill(0, 120, 'SALE'),
+        'product_id' => array_fill(0, 120, $saleId),
+        'calculation_type' => array_fill(0, 120, 'MANUAL'),
+        'quantity' => array_fill(0, 120, 1),
+        'price' => array_fill(0, 120, '500'),
+    ];
+    $started = microtime(true);
+    $batchLookup = quotationBatchLookup($conn, $largePost);
+    check($batchLookup('SALE', $saleId)['name'] === $tag, 'Batch fetch resolves product');
+    check($batchLookup('SALE', -1) === null && $batchLookup('ORDER', $saleId) === null, 'Batch lookup preserves missing/type isolation');
+    $largeItems = quotationParseItems($largePost, $batchLookup);
+    quotationInsertItems($conn, $quoteId, $largeItems);
+    $elapsed = microtime(true) - $started;
+    $stmt->execute([$quoteId]);
+    check((int)$stmt->get_result()->fetch_assoc()['n'] === 121, 'All 120 items inserted across batches');
+    check(array_sum(array_column($largeItems, 'total')) === 60000.0, 'Batch totals are unchanged');
+    echo 'PASS: 120-item lookup, calculation and insert in ' . number_format($elapsed, 2) . " seconds.\n";
     echo "PASS: database save/edit, glass rates, order/service/sale conversion, stock only on conversion.\n";
 } finally {
     $conn->rollback();

@@ -37,7 +37,7 @@ try {
     if ($valid !== null && $valid < $date) throw new InvalidArgumentException('Valid until cannot be before the quotation date.');
     $status = $_POST['status'] ?? 'Draft';
     if (!in_array($status, ['Draft', 'Sent', 'Accepted', 'Rejected'], true)) throw new InvalidArgumentException('Select a valid quotation status.');
-    $items = quotationParseItems($_POST, fn($type, $pid) => quotationLookup($conn, $type, $pid));
+    $items = quotationParseItems($_POST, quotationBatchLookup($conn, $_POST));
     $subtotal = round(array_sum(array_column($items, 'total')), 2);
     $discount = quotationNumber($_POST['discount'] ?? '', 'discount');
     if ($discount > $subtotal) throw new InvalidArgumentException('Discount cannot exceed the subtotal.');

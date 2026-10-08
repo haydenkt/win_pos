@@ -38,6 +38,32 @@ function quotationLookup(mysqli $conn, string $type, int $id): ?array
     return $stmt->get_result()->fetch_assoc();
 }
 
+/** Load each requested catalogue once, not once per quotation row. */
+function quotationBatchLookup(mysqli $conn, array $post): callable
+{
+    $types = $post['item_type'] ?? [];
+    if (!is_array($types) || !$types || count($types) > 500) {
+        throw new InvalidArgumentException('Add between 1 and 500 complete quotation items.');
+    }
+    $ids = ['ORDER' => [], 'SALE' => [], 'GLASS' => []];
+    foreach ($types as $i => $type) {
+        $pid = (int) ($post['product_id'][$i] ?? 0);
+        if (in_array($type, ['ORDER', 'SALE'], true) && $pid > 0) $ids[$type][$pid] = $pid;
+        $gid = (int) ($post['glass_type_id'][$i] ?? 0);
+        if (($post['calculation_type'][$i] ?? '') === 'SQFT' && $gid > 0) $ids['GLASS'][$gid] = $gid;
+    }
+    $catalog = [];
+    foreach (['ORDER' => 'factory_products', 'SALE' => 'products', 'GLASS' => 'glass_types'] as $type => $table) {
+        if (!$ids[$type]) continue;
+        $placeholders = implode(',', array_fill(0, count($ids[$type]), '?'));
+        $stmt = $conn->prepare("SELECT * FROM $table WHERE id IN ($placeholders)");
+        $stmt->execute(array_values($ids[$type]));
+        foreach ($stmt->get_result() as $row) $catalog[$type][(int) $row['id']] = $row;
+        $stmt->close();
+    }
+    return static fn(string $type, int $id): ?array => $catalog[$type][$id] ?? null;
+}
+
 /** The same MM half-foot rounding and manual quantity pricing as Add Invoice. */
 function quotationParseItems(array $post, callable $lookup): array
 {
@@ -117,12 +143,17 @@ function quotationInsertItems(mysqli $conn, int $id, array $items): void
     $columns = ['item_type', 'product_id', 'factory_product_id', 'product_name', 'description',
         'calculation_type', 'measurement_unit', 'width_mm', 'height_mm', 'width_ft', 'height_ft',
         'quantity', 'sqft', 'base_price', 'glass_type_id', 'glass_name', 'glass_price', 'unit_price', 'total'];
-    $stmt = $conn->prepare('INSERT INTO quotation_items (quotation_id,' . implode(',', $columns)
-        . ') VALUES (' . implode(',', array_fill(0, count($columns) + 1, '?')) . ')');
-    foreach ($items as $item) {
-        $values = [$id];
-        foreach ($columns as $column) $values[] = $item[$column];
+    $rowPlaceholders = '(' . implode(',', array_fill(0, count($columns) + 1, '?')) . ')';
+    foreach (array_chunk($items, 50) as $batch) {
+        $stmt = $conn->prepare('INSERT INTO quotation_items (quotation_id,' . implode(',', $columns)
+            . ') VALUES ' . implode(',', array_fill(0, count($batch), $rowPlaceholders)));
+        $values = [];
+        foreach ($batch as $item) {
+            $values[] = $id;
+            foreach ($columns as $column) $values[] = $item[$column];
+        }
         $stmt->execute($values);
+        $stmt->close();
     }
 }
 
