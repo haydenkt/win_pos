@@ -942,6 +942,17 @@ if (!empty($initial_payments)) {
                 ?? 0
             );
 
+        // Custom factory items do not need a catalog entry, but must be named.
+        if ($type === 'ORDER' && $product_id <= 0) {
+            if ($product_name === '') {
+                throw new Exception('Please enter a name for the custom factory item.');
+            }
+            if ($calculation_type === 'SQFT' &&
+                ($width_input <= 0 || $height_input <= 0)) {
+                throw new Exception('Please enter a width and height greater than zero for the custom SQFT item.');
+            }
+        }
+
 
         // =================================
         // CONVERT MEASUREMENT
@@ -1262,10 +1273,10 @@ if (!empty($initial_payments)) {
             }
 
 
-            if (!$fp && $calculation_type !== 'MANUAL') {
+            if (!$fp && $product_id > 0) {
 
                 throw new Exception(
-                    "Factory product not found."
+                    "The selected factory product no longer exists. Please select it again or enter a custom item name."
                 );
 
             }

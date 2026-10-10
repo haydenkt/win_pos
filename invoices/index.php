@@ -20,6 +20,10 @@ requirePermission('invoices_view');
 $search   = trim($_GET['search'] ?? '');
 $date_from = trim($_GET['date_from'] ?? '');
 $date_to   = trim($_GET['date_to'] ?? '');
+$payment_filter = $_GET['payment_filter'] ?? 'All';
+if (!in_array($payment_filter, ['Outstanding', 'Paid', 'All'], true)) {
+    $payment_filter = 'All';
+}
 
 
 // =====================================================
@@ -46,6 +50,13 @@ $where = [];
 $params = [];
 
 $types = '';
+
+// Apply this in SQL so counts, daily totals, and rows all use the same subset.
+if ($payment_filter === 'Outstanding') {
+    $where[] = "invoices.payment_status IN ('Unpaid', 'Partial')";
+} elseif ($payment_filter === 'Paid') {
+    $where[] = "invoices.payment_status = 'Paid'";
+}
 
 
 // Search
@@ -448,7 +459,7 @@ New Invoice
 
 <!-- SEARCH -->
 
-<div class="col-md-4">
+<div class="col-md-6 col-lg-3">
 
 <label class="form-label">
 
@@ -475,7 +486,7 @@ value="<?=htmlspecialchars($search);?>"
 
 <!-- FROM -->
 
-<div class="col-md-3">
+<div class="col-md-3 col-lg-2">
 
 <label class="form-label">
 
@@ -500,7 +511,7 @@ value="<?=htmlspecialchars($date_from);?>"
 
 <!-- TO -->
 
-<div class="col-md-3">
+<div class="col-md-3 col-lg-2">
 
 <label class="form-label">
 
@@ -525,7 +536,16 @@ value="<?=htmlspecialchars($date_to);?>"
 
 <!-- BUTTON -->
 
-<div class="col-md-2 d-flex align-items-end">
+<div class="col-md-6 col-lg-3">
+    <label class="form-label" for="payment_filter">Payment status</label>
+    <select class="form-select" id="payment_filter" name="payment_filter">
+        <option value="Outstanding" <?=$payment_filter === 'Outstanding' ? 'selected' : '';?>>Unpaid &amp; partially paid</option>
+        <option value="Paid" <?=$payment_filter === 'Paid' ? 'selected' : '';?>>Fully paid</option>
+        <option value="All" <?=$payment_filter === 'All' ? 'selected' : '';?>>All invoices</option>
+    </select>
+</div>
+
+<div class="col-md-6 col-lg-2 d-flex align-items-end">
 
 <button
 
@@ -1081,6 +1101,7 @@ Try changing your search or date range.
 function invoicePageUrl(
     $page_number
 ) {
+    global $payment_filter;
 
     $params = [
 
@@ -1090,6 +1111,7 @@ function invoicePageUrl(
         'date_from' =>
             $_GET['date_from'] ?? '',
 
+        'payment_filter' => $payment_filter,
         'date_to' =>
             $_GET['date_to'] ?? '',
 
