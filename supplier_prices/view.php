@@ -5,6 +5,7 @@ if(!$item){http_response_code(404);exit('Supplier item not found.');}
 $specs=json_decode($item['specs_json'],true); $prices=json_decode($item['prices_json'],true); $flags=json_decode($item['flags_json'],true);
 $page_title='Supplier product details';
 require_once __DIR__.'/../includes/header.php'; require_once __DIR__.'/../includes/sidebar.php';
+require_once __DIR__.'/theme.php';
 ?>
 <section class="page-hero"><div><div class="page-kicker"><?=spEscape($item['category']);?></div><h1 class="page-title"><?=spEscape($item['product_code']?:'Uncoded item');?></h1><p class="page-subtitle"><?=spEscape($item['description']);?></p></div><a class="btn btn-outline-primary" target="_blank" rel="noopener" href="source.php?id=<?=$item['document_id'];?>#page=<?=$item['page_number'];?>"><i class="fa fa-file-pdf me-1"></i> Original PDF · page <?=$item['page_number'];?></a></section>
 <p class="text-body-secondary"><?=spEscape($item['document_title']);?> · Price list dated <?=date('d M Y',strtotime($item['effective_date']));?></p>

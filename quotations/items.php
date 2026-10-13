@@ -23,8 +23,8 @@ function quotationFeet(array $item): array
 {
     if (($item['calculation_type'] ?? 'SQFT') === 'MANUAL') return [0.0, 0.0];
     return [
-        (float) ($item['width_ft'] ?? ceil(((float) $item['width_mm'] / 304.8 * 2) - 1e-9) / 2),
-        (float) ($item['height_ft'] ?? ceil(((float) $item['height_mm'] / 304.8 * 2) - 1e-9) / 2),
+        (float) ($item['width_ft'] ?? ceil(((float) $item['width_mm'] / 305 * 2) - 1e-9) / 2),
+        (float) ($item['height_ft'] ?? ceil(((float) $item['height_mm'] / 305 * 2) - 1e-9) / 2),
     ];
 }
 
@@ -102,10 +102,11 @@ function quotationParseItems(array $post, callable $lookup): array
             $width = quotationNumber($post['width'][$i] ?? '', 'width for ' . $label);
             $height = quotationNumber($post['height'][$i] ?? '', 'height for ' . $label);
             if ($width <= 0 || $height <= 0) throw new InvalidArgumentException('Enter width and height for ' . $label . '.');
-            $widthMm = $unit === 'FT' ? $width * 304.8 : $width;
-            $heightMm = $unit === 'FT' ? $height * 304.8 : $height;
-            $widthFt = $unit === 'FT' ? $width : ceil(($width / 304.8 * 2) - 1e-9) / 2;
-            $heightFt = $unit === 'FT' ? $height : ceil(($height / 304.8 * 2) - 1e-9) / 2;
+            // Factory convention: 1220 mm = 4 ft, in both directions.
+            $widthMm = $unit === 'FT' ? $width * 305 : $width;
+            $heightMm = $unit === 'FT' ? $height * 305 : $height;
+            $widthFt = $unit === 'FT' ? $width : ceil(($width / 305 * 2) - 1e-9) / 2;
+            $heightFt = $unit === 'FT' ? $height : ceil(($height / 305 * 2) - 1e-9) / 2;
             $base = quotationNumber($post['base_price'][$i] ?? '', 'original price for ' . $label);
             $glassId = (int) ($post['glass_type_id'][$i] ?? 0) ?: null;
             if ($glassId) {

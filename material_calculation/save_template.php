@@ -32,7 +32,7 @@ foreach ($materialNames as $index => $materialName) {
     $materialName = trim((string) $materialName);
     if ($materialName === '') continue;
     $headingRule = (string) ($_POST['heading_rule'][$index] ?? 'overall');
-    if (!in_array($headingRule, ['overall', 'lower', 'lower_plus_perimeter', 'crossbar_only'], true)) $headingRule = 'overall';
+    if (!in_array($headingRule, ['overall', 'lower', 'lower_plus_perimeter', 'crossbar_only', 'heading_only'], true)) $headingRule = 'overall';
     $formulas[] = [
         $materialName,
         trim((string) ($_POST['material_name_en'][$index] ?? '')),

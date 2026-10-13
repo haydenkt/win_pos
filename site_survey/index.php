@@ -80,6 +80,8 @@ Site Surveys
 
 
 
+<a href="mobile/index.html" class="btn btn-outline-primary">Mobile / offline survey</a>
+
 <a href="add.php"
 class="btn btn-primary">
 

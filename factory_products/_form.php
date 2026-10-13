@@ -24,6 +24,7 @@ $listUrl = $is_edit ? factoryProductListUrl($listContext) : 'index.php';
                 <input type="hidden" name="id" value="<?=(int) $product['id'];?>">
                 <input type="hidden" name="return_search" value="<?=htmlspecialchars($listContext['return_search']);?>">
                 <input type="hidden" name="return_status" value="<?=htmlspecialchars($listContext['return_status']);?>">
+                <input type="hidden" name="return_profile" value="<?=(int) $listContext['return_profile'];?>">
             <?php } ?>
 
             <div class="row g-4">

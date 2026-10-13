@@ -149,7 +149,9 @@ function materialFormulaLabel(array $formula): string
     }
 
     $label = $parts ? implode(' + ', $parts) : '0';
-    if (($formula['heading_rule'] ?? '') === 'lower') {
+    if (($formula['heading_rule'] ?? '') === 'heading_only') {
+        $label .= ' · top heading height only';
+    } elseif (($formula['heading_rule'] ?? '') === 'lower') {
         $label .= ' · lower height';
     } elseif (($formula['heading_rule'] ?? '') === 'lower_plus_perimeter') {
         $label .= ' · lower + heading perimeter';

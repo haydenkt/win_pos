@@ -708,6 +708,7 @@ Photo module will be added later
 
 <?php
 
+require __DIR__ . '/mobile/photos.php';
 include "../includes/footer.php";
 
 ?>

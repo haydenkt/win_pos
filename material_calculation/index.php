@@ -46,6 +46,24 @@ require_once __DIR__ . '/../includes/sidebar.php';
     .size-breakdown div + div { margin-top: .25rem; }
     .material-total-card { background: linear-gradient(135deg, var(--bs-primary), #0b5ed7); color: #fff; }
     .material-total-card .text-body-secondary { color: rgba(255,255,255,.75) !important; }
+    html[data-theme="dark"] .material-calculator .text-body-secondary,
+    html[data-theme="dark"] .material-calculator .material-formula,
+    html[data-theme="dark"] .material-calculator .size-breakdown {
+        color: #e8eef7 !important;
+    }
+    html[data-theme="dark"] .material-calculator .material-result-value {
+        color: #93c5fd;
+    }
+    html[data-theme="dark"] .material-calculator .btn-outline-primary {
+        color: #93c5fd;
+        border-color: #60a5fa;
+    }
+    html[data-theme="dark"] .material-calculator .btn-outline-primary:hover,
+    html[data-theme="dark"] .material-calculator .btn-outline-primary:focus-visible {
+        background: #93c5fd;
+        color: #0b1220;
+    }
+    html[data-theme="dark"] .material-calculator .btn-primary { color: #0b1220; }
     @media print {
         .sidebar, .navbar, .mobile-menu-button, .sidebar-backdrop, .no-print { display: none !important; }
         main { margin: 0 !important; padding: 0 !important; }
@@ -54,6 +72,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
     }
 </style>
 
+<div class="material-calculator">
 <section class="page-hero">
     <div>
         <div class="page-kicker">Factory</div>
@@ -68,7 +87,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
 
 <div class="row g-4">
     <div class="col-xl-5">
-        <div class="card material-input-card h-100">
+        <div class="card material-input-card">
             <div class="card-header">
                 <h2 class="h5 mb-0"><i class="fa fa-ruler-combined me-2"></i>Finished sizes</h2>
             </div>
@@ -100,6 +119,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 </div>
             </div>
         </div>
+        <?php require __DIR__ . '/diagram.php'; ?>
     </div>
 
     <div class="col-xl-7">
@@ -134,6 +154,8 @@ require_once __DIR__ . '/../includes/sidebar.php';
             </div>
         </div>
     </div>
+</div>
+
 </div>
 
 <template id="sizeRowTemplate">
@@ -181,6 +203,11 @@ require_once __DIR__ . '/../includes/sidebar.php';
         row.querySelector('.size-width').value = width;
         row.querySelector('.size-height').value = height;
         row.querySelector('.size-quantity').value = quantity;
+        if (window.winPos728Diagram.matches(selectedTemplate())) {
+            row.querySelector('.size-has-heading').checked = true;
+            row.querySelector('.size-heading-height').value = 1;
+            row.querySelector('.size-heading-height').disabled = false;
+        }
         row.querySelectorAll('input').forEach((input) => {
             input.addEventListener('input', calculate);
             input.addEventListener('change', calculate);
@@ -204,7 +231,9 @@ require_once __DIR__ . '/../includes/sidebar.php';
         calculate();
     };
 
-    const getSizes = () => [...sizeRows.querySelectorAll('.size-row')].map((row) => ({
+    const getSizes = () => [...sizeRows.querySelectorAll('.size-row')]
+    .filter(row => !window.winPos728Diagram.matches(selectedTemplate()) || window.winPos728Diagram.valid(row))
+    .map((row) => ({
         width: Math.max(0, Number(row.querySelector('.size-width').value) || 0),
         height: Math.max(0, Number(row.querySelector('.size-height').value) || 0),
         quantity: Math.max(1, Math.floor(Number(row.querySelector('.size-quantity').value) || 1)),
@@ -215,6 +244,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
     const calculate = () => {
         const sizes = getSizes();
         const template = selectedTemplate();
+        window.winPos728Diagram.render(template, sizeRows.querySelectorAll('.size-row'));
         materialRows.replaceChildren();
         unitTotals.replaceChildren();
 
@@ -243,13 +273,14 @@ require_once __DIR__ . '/../includes/sidebar.php';
                 if (headingRule === 'crossbar_only') {
                     perItem = size.hasHeading ? size.width : 0;
                 } else {
-                    const calculationHeight = size.hasHeading && (headingRule === 'lower' || headingRule === 'lower_plus_perimeter')
+                    const calculationHeight = headingRule === 'heading_only' ? headingHeight : size.hasHeading && (headingRule === 'lower' || headingRule === 'lower_plus_perimeter')
                         ? lowerHeight
                         : size.height;
                     perItem = (Number(formula.width_factor) * size.width)
                         + (Number(formula.height_factor) * calculationHeight)
                         + (Number(formula.area_factor) * size.width * calculationHeight)
                         + Number(formula.fixed_amount);
+                    if (headingRule === 'heading_only' && !size.hasHeading) perItem = 0;
                     if (size.hasHeading && headingRule === 'lower_plus_perimeter') {
                         perItem += (2 * size.width) + (2 * headingHeight);
                     }

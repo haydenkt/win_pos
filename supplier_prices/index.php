@@ -21,6 +21,7 @@ $totalItems=array_sum(array_column($documents,'item_count')); $totalPages=array_
 $page_title='Supplier price lists';
 require_once __DIR__.'/../includes/header.php';
 require_once __DIR__.'/../includes/sidebar.php';
+require_once __DIR__.'/theme.php';
 function spPageLink(int $number): string { $q=$_GET; $q['page']=$number; return '?'.http_build_query($q); }
 ?>
 <style>

@@ -733,7 +733,8 @@ if (!empty($initial_payments)) {
         // Always round upward to the next half foot.
         // The tiny epsilon keeps an exact 3.5 from becoming 4.0
         // because of floating-point conversion noise.
-        $feet = $mm / 304.8;
+        // Factory convention: 1220 mm = 4 ft.
+        $feet = $mm / 305;
         return ceil(($feet * 2) - 1.0e-9) / 2;
 
     }
@@ -997,11 +998,11 @@ if (!empty($initial_payments)) {
             // FT -> MM
 
             $width_mm =
-                $width_input * 304.8;
+                $width_input * 305;
 
 
             $height_mm =
-                $height_input * 304.8;
+                $height_input * 305;
 
         }
 
@@ -1720,6 +1721,8 @@ if (!empty($initial_payments)) {
     auditLog($conn,'CREATE','invoice',$invoice_id,'Created invoice '.$invoice_no,null,['grand_total'=>$grand_total,'customer_id'=>$customer_id]);
     $conn->commit();
 
+    $_SESSION['save_notice'] = 'Invoice saved successfully.';
+
 
     echo "
 
@@ -1736,8 +1739,6 @@ if (!empty($initial_payments)) {
             // The invoice is already saved; storage cleanup is optional.
 
         }
-
-        alert('Invoice Saved Successfully');
 
         window.location='index.php';
 

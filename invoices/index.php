@@ -89,7 +89,7 @@ if ($search !== '') {
 
 if ($date_from !== '') {
 
-    $where[] = "DATE(invoices.created_at) >= ?";
+    $where[] = "invoices.created_at >= ?";
 
     $params[] = $date_from;
 
@@ -101,7 +101,7 @@ if ($date_from !== '') {
 
 if ($date_to !== '') {
 
-    $where[] = "DATE(invoices.created_at) <= ?";
+    $where[] = "invoices.created_at < DATE_ADD(?, INTERVAL 1 DAY)";
 
     $params[] = $date_to;
 
@@ -116,79 +116,6 @@ if (!empty($where)) {
     $where_sql =
         "WHERE " .
         implode(" AND ", $where);
-
-}
-
-
-// =====================================================
-// TOTAL INVOICE COUNT
-// =====================================================
-
-$count_sql = "
-
-SELECT COUNT(*) AS total
-
-FROM invoices
-
-LEFT JOIN customers
-ON invoices.customer_id = customers.id
-
-$where_sql
-
-";
-
-
-$stmt = $conn->prepare($count_sql);
-
-if (!$stmt) {
-    die(
-        "Count query failed: "
-        . $conn->error
-    );
-}
-
-
-if (!empty($params)) {
-
-    $stmt->bind_param(
-        $types,
-        ...$params
-    );
-
-}
-
-
-$stmt->execute();
-
-$count_result =
-    $stmt->get_result();
-
-$count_row =
-    $count_result->fetch_assoc();
-
-$total_invoices =
-    intval($count_row['total'] ?? 0);
-
-
-// =====================================================
-// TOTAL PAGES
-// =====================================================
-
-$total_pages =
-    max(
-        1,
-        (int)ceil(
-            $total_invoices / $per_page
-        )
-    );
-
-
-if ($page > $total_pages) {
-
-    $page = $total_pages;
-
-    $offset =
-        ($page - 1) * $per_page;
 
 }
 
@@ -271,6 +198,7 @@ $summary_result =
 // =====================================================
 
 $daily_summary = [];
+$total_invoices = 0;
 
 while (
     $summary =
@@ -281,7 +209,16 @@ while (
         $summary['sale_date']
     ] = $summary;
 
+    // The summary already counts every matching invoice. Reuse that count
+    // instead of scanning the same records in a separate database request.
+    $total_invoices += (int) $summary['invoice_count'];
+
 }
+
+$stmt->close();
+$total_pages = max(1, (int) ceil($total_invoices / $per_page));
+$page = min($page, $total_pages);
+$offset = ($page - 1) * $per_page;
 
 
 // =====================================================

@@ -412,16 +412,16 @@ $old=$old_result->fetch_assoc();
 $status=$old['status'] ?? 'Present';
 
 
-$days=$old['days'] ?? 1;
+$days=$status === 'Half Day' ? 0.5 : ($status === 'Absent' ? 0 : 1);
 
 
-$earned_amount=$old['earned_amount'] ?? $worker['daily_rate'];
+$earned_amount=round((float)$worker['daily_rate'] * $days, 2);
 
 
 
-$cash = $worker['default_cash'];
+$cash = round((float)$worker['default_cash'] * $days, 2);
 
-$saving = $worker['default_saving'];
+$saving = round((float)$worker['default_saving'] * $days, 2);
 
 
 
@@ -617,6 +617,8 @@ name="cash[]"
 step="500"
 
 class="form-control cash"
+data-default="<?=htmlspecialchars((string)$worker['default_cash'], ENT_QUOTES)?>"
+<?=$status !== 'Present' ? 'readonly' : ''?>
 
 value="<?=$cash?>"
 
@@ -640,6 +642,7 @@ onkeyup="calculateSaving(this)">
 name="saving[]"
 
 class="form-control saving"
+data-default="<?=htmlspecialchars((string)$worker['default_saving'], ENT_QUOTES)?>"
 
 data-value="<?=$saving?>"
 
@@ -764,14 +767,13 @@ function calculate(select){
 
 
 
-    /*
-       IMPORTANT
-
-       Cash and Saving are not changed
-       when attendance changes.
-
-       Saving belongs to worker account.
-    */
+    // Always scale the full-day defaults, never the already-halved values.
+    for (const field of ['cash', 'saving']) {
+        const input = row.querySelector('.' + field);
+        const fullDay = parseFloat(input.dataset.default) || 0;
+        input.value = (fullDay * days).toFixed(2);
+    }
+    row.querySelector('.cash').readOnly = select.value !== 'Present';
 
 
 }

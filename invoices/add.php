@@ -312,6 +312,28 @@ if ($glassTypes) {
 
 /* MOBILE */
 
+html[data-theme="dark"] #invoiceForm .invoice-item {
+    background: var(--surface);
+    border-color: var(--ink-200);
+}
+html[data-theme="dark"] #invoiceForm .invoice-item__bar {
+    background: var(--ink-100);
+    color: #e8eef7;
+    border-color: var(--ink-200);
+}
+html[data-theme="dark"] #invoiceForm input[readonly] {
+    background-color: #1a283c;
+    color: #e8eef7;
+    border-color: #43526a;
+    opacity: 1;
+}
+html[data-theme="dark"] #invoiceForm .text-body-secondary { color: #c3cfdf !important; }
+html[data-theme="dark"] #invoiceForm .btn-primary { color: #0b1220; }
+html[data-theme="dark"] #invoiceForm .btn-outline-warning { color: #fcd34d; border-color: #fcd34d; }
+html[data-theme="dark"] #invoiceForm .btn-outline-warning:hover { color: #0b1220; background: #fcd34d; }
+html[data-theme="dark"] #invoiceForm .btn-outline-danger { color: #fda4af; border-color: #fb7185; }
+html[data-theme="dark"] #invoiceForm .btn-outline-danger:hover { color: #0b1220; background: #fda4af; }
+
 @media (max-width: 768px) {
 
     .invoice-item table {
@@ -2538,14 +2560,14 @@ function calculateItem(item)
 
             widthFt =
                 Math.ceil(
-                    ((width / 304.8) * 2)
+                    ((width / 305) * 2)
                     - 1e-9
                 ) / 2;
 
 
             heightFt =
                 Math.ceil(
-                    ((height / 304.8) * 2)
+                    ((height / 305) * 2)
                     - 1e-9
                 ) / 2;
 

@@ -112,6 +112,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                                 <td>
                                     <select name="heading_rule[]" class="form-select">
                                         <option value="overall" <?=$formula['heading_rule']==='overall'?'selected':'';?>>Use overall height</option>
+                                        <option value="heading_only" <?=$formula['heading_rule']==='heading_only'?'selected':'';?>>Top heading only</option>
                                         <option value="lower" <?=$formula['heading_rule']==='lower'?'selected':'';?>>Use lower height</option>
                                         <option value="lower_plus_perimeter" <?=$formula['heading_rule']==='lower_plus_perimeter'?'selected':'';?>>Lower + top perimeter</option>
                                         <option value="crossbar_only" <?=$formula['heading_rule']==='crossbar_only'?'selected':'';?>>Heading crossbar only</option>
@@ -152,7 +153,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         <td><input type="number" name="area_factor[]" class="form-control" step="0.0001" value="0"></td>
         <td><input type="number" name="fixed_amount[]" class="form-control" step="0.0001" value="0"></td>
         <td><input type="number" name="usable_length_per_piece[]" class="form-control" min="0" step="0.5" value="18" title="Usable length from one stock piece after waste"></td>
-        <td><select name="heading_rule[]" class="form-select"><option value="overall">Use overall height</option><option value="lower">Use lower height</option><option value="lower_plus_perimeter">Lower + top perimeter</option><option value="crossbar_only">Heading crossbar only</option></select></td>
+        <td><select name="heading_rule[]" class="form-select"><option value="overall">Use overall height</option><option value="heading_only">Top heading only</option><option value="lower">Use lower height</option><option value="lower_plus_perimeter">Lower + top perimeter</option><option value="crossbar_only">Heading crossbar only</option></select></td>
         <td><button type="button" class="btn btn-sm btn-outline-danger remove-material"><i class="fa fa-trash"></i></button></td>
     </tr>
 </template>

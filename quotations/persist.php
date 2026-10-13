@@ -81,7 +81,7 @@ try {
         ['customer_id' => $customerId, 'total' => $total]);
     $conn->commit();
     $_SESSION['clear_quotation_draft'] = $editing ? 'win_pos_quotation_draft_' . $id : 'win_pos_quotation_draft_new';
-    $_SESSION['success'] = 'Quotation ' . $quoteNo . ($editing ? ' updated.' : ' created.');
+    $_SESSION['save_notice'] = 'Quotation ' . $quoteNo . ($editing ? ' updated successfully.' : ' saved successfully.');
     header('Location:view.php?id=' . $id); exit;
 } catch (Throwable $error) {
     $conn->rollback();

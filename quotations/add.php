@@ -1148,12 +1148,12 @@ function calculateItem(item)
         ) {
             widthFt =
                 Math.ceil(
-                    ((width / 304.8) * 2)
+                    ((width / 305) * 2)
                     - 1e-9
                 ) / 2;
             heightFt =
                 Math.ceil(
-                    ((height / 304.8) * 2)
+                    ((height / 305) * 2)
                     - 1e-9
                 ) / 2;
         }

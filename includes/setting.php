@@ -6,24 +6,19 @@ if (!isset($conn)) {
 
 function getSetting($conn, $group, $key)
 {
-    $group = mysqli_real_escape_string($conn, $group);
-    $key = mysqli_real_escape_string($conn, $key);
-
-    $query = mysqli_query($conn,"
-        SELECT setting_value
-        FROM settings
-        WHERE setting_group='$group'
-        AND setting_key='$key'
-        LIMIT 1
-    ");
-
-    if($query && mysqli_num_rows($query) > 0){
-
-        $row = mysqli_fetch_assoc($query);
-
-        return $row['setting_value'];
-
+    // Request-local only: one round trip for header/sidebar settings, with
+    // fresh values on the next page load (no stale session or disk cache).
+    static $loadedConnection = null;
+    static $settings = [];
+    if ($loadedConnection !== $conn) {
+        $settings = [];
+        $query = $conn->query('SELECT setting_group, setting_key, setting_value FROM settings');
+        if (!$query) return '';
+        while ($row = $query->fetch_assoc()) {
+            $settings[$row['setting_group']][$row['setting_key']] = $row['setting_value'];
+        }
+        $query->free();
+        $loadedConnection = $conn;
     }
-
-    return "";
+    return $settings[$group][$key] ?? '';
 }

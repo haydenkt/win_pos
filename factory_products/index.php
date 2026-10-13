@@ -21,6 +21,8 @@ $page_title = 'Factory products';
 $search = trim((string) ($_GET['search'] ?? ''));
 $status = (string) ($_GET['status'] ?? 'All');
 $allowed_statuses = ['All', 'Active', 'Inactive'];
+$profile = max(0, (int) ($_GET['profile'] ?? 0));
+$profiles = $conn->query('SELECT id, name FROM material_types ORDER BY name')->fetch_all(MYSQLI_ASSOC);
 
 if (!in_array($status, $allowed_statuses, true)) {
     $status = 'All';
@@ -36,11 +38,12 @@ $sql = "
     LEFT JOIN material_types mt ON mt.id = fp.material_type_id
     WHERE (? = '' OR fp.product_name LIKE CONCAT('%', ?, '%'))
       AND (? = 'All' OR fp.status = ?)
+      AND (? = 0 OR fp.material_type_id = ?)
     ORDER BY fp.status ASC, fp.product_name ASC
 ";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param('ssss', $search, $search, $status, $status);
+$stmt->bind_param('ssssii', $search, $search, $status, $status, $profile, $profile);
 $stmt->execute();
 $products = $stmt->get_result();
 
@@ -82,7 +85,7 @@ include '../includes/sidebar.php';
 <div class="card mb-4">
     <div class="card-body">
         <form method="get" class="row g-3 align-items-end">
-            <div class="col-lg-6">
+            <div class="col-lg-3">
                 <label class="form-label" for="search">Search products</label>
                 <input id="search" type="search" name="search" class="form-control"
                        value="<?=htmlspecialchars($search);?>" placeholder="Product name">
@@ -92,6 +95,15 @@ include '../includes/sidebar.php';
                 <select id="status" name="status" class="form-select">
                     <?php foreach ($allowed_statuses as $option) { ?>
                         <option value="<?=$option;?>" <?=$status === $option ? 'selected' : '';?>><?=$option;?></option>
+                    <?php } ?>
+                </select>
+            </div>
+            <div class="col-lg-3">
+                <label class="form-label" for="profile">Profile / type</label>
+                <select id="profile" name="profile" class="form-select">
+                    <option value="0">All profiles</option>
+                    <?php foreach ($profiles as $option) { ?>
+                        <option value="<?=(int) $option['id'];?>" <?=$profile === (int) $option['id'] ? 'selected' : '';?>><?=htmlspecialchars($option['name']);?></option>
                     <?php } ?>
                 </select>
             </div>
@@ -150,7 +162,7 @@ include '../includes/sidebar.php';
                                 </span>
                             </td>
                             <td class="text-end text-nowrap">
-                                <a href="edit.php?<?=htmlspecialchars(http_build_query(['id' => (int) $product['id'], 'return_search' => $search, 'return_status' => $status]));?>" class="btn btn-sm btn-outline-primary">
+                                <a href="edit.php?<?=htmlspecialchars(http_build_query(['id' => (int) $product['id'], 'return_search' => $search, 'return_status' => $status, 'return_profile' => $profile]));?>" class="btn btn-sm btn-outline-primary">
                                     <i class="fa fa-pen"></i> Edit
                                 </a>
                                 <?php if ($can_manage) { ?>

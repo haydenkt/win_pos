@@ -42,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
 }
 $page_title=$type==='document'?'Rename price list':'Edit supplier product name';
 require_once __DIR__.'/../includes/header.php'; require_once __DIR__.'/../includes/sidebar.php';
+require_once __DIR__.'/theme.php';
 ?>
 <a class="content-back" href="<?=spEscape($back);?>"><i class="fa fa-arrow-left"></i> Back to <?=$type==='document'?'Supplier price lists':'Product details';?></a>
 <section class="page-hero"><div><h1 class="page-title"><?=spEscape($page_title);?></h1><p class="page-subtitle"><?=$type==='document'?'Choose the name you want to show for this catalogue.':'Correct the Burmese or English name shown for this product. Saved names can be searched immediately.';?></p></div></section>

@@ -10,7 +10,18 @@ requirePermission('quotations_view');
 if (empty($_SESSION['quotation_csrf'])) {
     $_SESSION['quotation_csrf'] = bin2hex(random_bytes(32));
 }
-$rows = $conn->query('SELECT q.*, c.name customer_name FROM quotations q JOIN customers c ON c.id=q.customer_id ORDER BY q.id DESC');
+$perPage = 50;
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$count = $conn->query('SELECT COUNT(*) AS total FROM quotations q JOIN customers c ON c.id=q.customer_id')->fetch_assoc();
+$totalRows = (int) $count['total'];
+$totalPages = max(1, (int) ceil($totalRows / $perPage));
+$page = min($page, $totalPages);
+$offset = ($page - 1) * $perPage;
+$stmt = $conn->prepare('SELECT q.id, q.quote_no, q.quote_date, q.valid_until, q.status, q.total, c.name customer_name FROM quotations q JOIN customers c ON c.id=q.customer_id ORDER BY q.id DESC LIMIT ? OFFSET ?');
+$stmt->bind_param('ii', $perPage, $offset);
+$stmt->execute();
+$rows = $stmt->get_result();
+$stmt->close();
 $page_title = 'Quotations';
 require_once __DIR__.'/../includes/header.php';
 require_once __DIR__.'/../includes/sidebar.php';
@@ -63,6 +74,14 @@ require_once __DIR__.'/../includes/sidebar.php';
             <?php endwhile; ?>
             </tbody>
         </table>
+    </div>
+    <div class="card-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span class="text-muted">Showing <?=$totalRows ? $offset + 1 : 0;?>–<?=min($offset + $perPage, $totalRows);?> of <?=$totalRows;?> quotations</span>
+        <nav aria-label="Quotation pages" class="d-flex align-items-center gap-2">
+            <?php if ($page > 1): ?><a class="btn btn-sm btn-outline-primary" href="?page=<?=$page - 1;?>">Previous</a><?php endif; ?>
+            <span>Page <?=$page;?> of <?=$totalPages;?></span>
+            <?php if ($page < $totalPages): ?><a class="btn btn-sm btn-outline-primary" href="?page=<?=$page + 1;?>">Next</a><?php endif; ?>
+        </nav>
     </div>
 </div>
 <?php require_once __DIR__.'/../includes/footer.php'; ?>

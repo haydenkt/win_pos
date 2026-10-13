@@ -43,13 +43,23 @@ if($_SERVER['REQUEST_METHOD']=="POST"){
 
         $status = $statuses[$key];
 
-        $day = $days[$key];
+        if (!in_array($status, ['Present', 'Half Day', 'Absent'], true)) {
+            throw new InvalidArgumentException('Invalid attendance status.');
+        }
+        $workerQuery = $conn->prepare('SELECT daily_rate, default_cash, default_saving FROM workers WHERE id=?');
+        $workerQuery->bind_param('i', $worker_id);
+        $workerQuery->execute();
+        $worker = $workerQuery->get_result()->fetch_assoc();
+        $workerQuery->close();
+        if (!$worker) throw new InvalidArgumentException('Worker not found.');
 
-        $earned = $earned_amounts[$key];
-
-        $cash = $cash_amounts[$key];
-
-        $saving = $saving_amounts[$key];
+        // Recalculate on the server too; do not halve posted half-day amounts again.
+        $day = $status === 'Half Day' ? 0.5 : ($status === 'Absent' ? 0 : 1);
+        $earned = round((float)$worker['daily_rate'] * $day, 2);
+        $cash = $status === 'Present'
+            ? max(0, min($earned, round((float)($cash_amounts[$key] ?? 0), 2)))
+            : round((float)$worker['default_cash'] * $day, 2);
+        $saving = round((float)$worker['default_saving'] * $day, 2);
 
 
 
@@ -220,6 +230,9 @@ if($_SERVER['REQUEST_METHOD']=="POST"){
         WHERE worker_id=?
 
         AND transaction_date=?
+
+        AND ((type='Cash Payment' AND note='Daily labour payment')
+          OR (type='Saving Deposit' AND note='Daily saving'))
 
         ");
 
