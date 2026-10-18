@@ -325,7 +325,7 @@ class="btn btn-warning btn-sm">
 <a href="delete.php?id=<?=$row['id'];?>"
 class="btn btn-danger btn-sm"
 
-onclick="return confirm('Delete this product?');">
+data-confirm="Delete this product?">
 
 
 <i class="fa fa-trash"></i>

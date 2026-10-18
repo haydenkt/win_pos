@@ -907,7 +907,7 @@ if(mysqli_num_rows($result)==0){
 
 <script>
 
-alert("No payment records found");
+posDialog.alert("No payment records found");
 
 </script>
 

@@ -436,13 +436,13 @@ if(isset($_POST['company_save'])){
 
     echo "
 
-    <script>
-
-    alert('Company Settings Saved');
-
-    window.location='company.php';
-
-    </script>
+    <script src='/assets/js/pos-dialog.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+ await posDialog.alert('Company Settings Saved');
+ window.location.href='company.php';
+});
+</script>
 
     ";
 

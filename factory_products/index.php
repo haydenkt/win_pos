@@ -167,7 +167,7 @@ include '../includes/sidebar.php';
                                 </a>
                                 <?php if ($can_manage) { ?>
                                     <form action="delete.php" method="post" class="d-inline"
-                                          onsubmit="return confirm('Delete this factory product? This cannot be undone.');">
+                                          data-confirm="Delete this factory product? This cannot be undone.">
                                         <input type="hidden" name="csrf_token" value="<?=htmlspecialchars($_SESSION['factory_product_csrf']);?>">
                                         <input type="hidden" name="id" value="<?=(int) $product['id'];?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger">

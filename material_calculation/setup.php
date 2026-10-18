@@ -135,7 +135,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         </form>
 
         <?php if ((int)$template['id'] > 0): ?>
-            <form action="delete_template.php" method="post" id="deleteTemplateForm" onsubmit="return confirm('Delete this product template and all of its formulas?');">
+            <form action="delete_template.php" method="post" id="deleteTemplateForm" data-confirm="Delete this product template and all of its formulas?">
                 <input type="hidden" name="csrf_token" value="<?=htmlspecialchars($_SESSION['material_calculation_csrf']);?>">
                 <input type="hidden" name="id" value="<?=(int)$template['id'];?>">
             </form>

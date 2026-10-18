@@ -332,7 +332,7 @@ title="Delete customer"
 
 aria-label="Delete customer"
 
-onclick="return confirm('Delete this customer?');">
+data-confirm="Delete this customer?">
 
 <i class="fa fa-trash"></i>
 

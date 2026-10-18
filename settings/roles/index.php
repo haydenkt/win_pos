@@ -227,7 +227,7 @@ class="btn btn-danger btn-sm"
 
 title="Delete"
 
-onclick="return confirm('Delete this role?')">
+data-confirm="Delete this role?">
 
 
 <i class="fa fa-trash"></i>

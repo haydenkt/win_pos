@@ -240,12 +240,12 @@ WHERE id='$invoice_id'
 
 echo "
 
+<script src='/assets/js/pos-dialog.js'></script>
 <script>
-
-alert('Payment Saved Successfully');
-
-window.location='../invoices/index.php';
-
+document.addEventListener('DOMContentLoaded', async () => {
+ await posDialog.alert('Payment Saved Successfully');
+ window.location.href='../invoices/index.php';
+});
 </script>
 
 ";

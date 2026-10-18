@@ -1403,15 +1403,15 @@ form.addEventListener('submit', event => {
     calculateTotals();
     const isNew = form.elements.customer_type.value === 'new';
     if (!(isNew ? form.elements.new_name.value.trim() : form.elements.customer_id.value)) {
-        event.preventDefault(); alert('Please select or add a customer.'); return;
+        event.preventDefault(); posDialog.alert('Please select or add a customer.'); return;
     }
     for (const item of itemList.children) {
         const state = itemState(item);
         if ((!state.product && !state.productName.trim()) || (state.type === 'SALE' && !state.product)) {
-            event.preventDefault(); alert(state.type === 'SALE' ? 'Please select a sale product.' : 'Each item needs a product or custom name.'); return;
+            event.preventDefault(); posDialog.alert(state.type === 'SALE' ? 'Please select a sale product.' : 'Each item needs a product or custom name.'); return;
         }
         if (state.mode === 'SQFT' && (number(state.width) <= 0 || number(state.height) <= 0)) {
-            event.preventDefault(); alert('Please enter width and height for SQFT items.'); return;
+            event.preventDefault(); posDialog.alert('Please enter width and height for SQFT items.'); return;
         }
     }
     if (!form.reportValidity()) { event.preventDefault(); return; }

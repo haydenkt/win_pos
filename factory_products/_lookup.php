@@ -137,7 +137,7 @@ include '../includes/sidebar.php';
                                 <tr>
                                     <td><strong><?=htmlspecialchars($item['name']);?></strong></td>
                                     <td class="text-end">
-                                        <form method="post" class="d-inline" onsubmit="return confirm('Delete this item?');">
+                                        <form method="post" class="d-inline" data-confirm="Delete this item?">
                                             <input type="hidden" name="token" value="<?=htmlspecialchars($_SESSION['factory_setup_token']);?>">
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?=(int) $item['id'];?>">

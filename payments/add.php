@@ -510,7 +510,7 @@ title="Edit">
 
 class="btn btn-danger btn-sm"
 
-onclick="return confirm('Delete this payment?')"
+data-confirm="Delete this payment?"
 
 title="Delete">
 

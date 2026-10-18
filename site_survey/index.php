@@ -270,7 +270,7 @@ title="Edit">
 <a href="delete.php?id=<?=$row['id'];?>"
 class="btn btn-sm btn-danger"
 title="Delete"
-onclick="return confirm('Delete this survey?');">
+data-confirm="Delete this survey?">
 
 <i class="fa fa-trash"></i>
 
@@ -445,7 +445,7 @@ class="btn btn-sm btn-warning">
 
 <a href="delete.php?id=<?=$row['id'];?>"
 class="btn btn-sm btn-danger"
-onclick="return confirm('Delete this survey?');">
+data-confirm="Delete this survey?">
 
 <i class="fa fa-trash"></i>
 

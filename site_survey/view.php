@@ -538,7 +538,7 @@ class="btn btn-sm btn-warning">
 
 <a href="measurements/delete.php?id=<?=$m['id'];?>&survey_id=<?=$id;?>"
 class="btn btn-sm btn-danger"
-onclick="return confirm('Delete this measurement?');">
+data-confirm="Delete this measurement?">
 
 
 <i class="fa fa-trash"></i>

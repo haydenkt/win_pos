@@ -45,10 +45,13 @@ $result = $check->get_result();
 if($result->num_rows > 0){
 
     echo "
-    <script>
-    alert('Warning: This customer has existing orders and cannot be deleted.');
-    window.location='index.php';
-    </script>
+    <script src='/assets/js/pos-dialog.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+ await posDialog.alert('Warning: This customer has existing orders and cannot be deleted.');
+ window.location.href='index.php';
+});
+</script>
     ";
 
     exit();
@@ -77,20 +80,26 @@ if($stmt->execute()){
     auditLog($conn,'DELETE','customer',$id,'Deleted customer '.($old_customer['name']??('#'.$id)),$old_customer,null);
 
     echo "
-    <script>
-    alert('Customer Deleted Successfully');
-    window.location='index.php';
-    </script>
+    <script src='/assets/js/pos-dialog.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+ await posDialog.alert('Customer Deleted Successfully');
+ window.location.href='index.php';
+});
+</script>
     ";
 
 }
 else{
 
     echo "
-    <script>
-    alert('Delete Failed');
-    window.location='index.php';
-    </script>
+    <script src='/assets/js/pos-dialog.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+ await posDialog.alert('Delete Failed');
+ window.location.href='index.php';
+});
+</script>
     ";
 
 }

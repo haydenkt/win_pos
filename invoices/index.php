@@ -949,7 +949,7 @@ class="btn btn-danger btn-sm"
 
 title="Delete"
 
-onclick="return confirm('Delete this invoice?');"
+data-confirm="Delete this invoice?"
 
 >
 

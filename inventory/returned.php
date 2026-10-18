@@ -357,7 +357,7 @@ include '../includes/sidebar.php';
                                         <form
                                             method="POST"
                                             action="/inventory/undo_return.php"
-                                            onsubmit="return confirm('Undo this return? Product stock and return history will be reversed.');"
+                                            data-confirm="Undo this return? Product stock and return history will be reversed."
                                         >
                                             <input
                                                 type="hidden"

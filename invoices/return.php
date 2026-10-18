@@ -382,7 +382,7 @@ action="save_return.php"
 
 method="POST"
 
-onsubmit="return confirmReturn();"
+onsubmit="event.preventDefault(); confirmReturn(this);"
 
 >
 
@@ -1152,7 +1152,8 @@ function calculateTotalReturn() {
 // CONFIRM
 // =====================================================
 
-function confirmReturn() {
+async function confirmReturn(form) {
+    if (form.dataset.confirming) return;
 
 
     let total = 0;
@@ -1194,7 +1195,7 @@ function confirmReturn() {
     if (!valid) {
 
 
-        alert(
+        posDialog.alert(
             "Return quantity cannot be greater than the remaining quantity."
         );
 
@@ -1207,7 +1208,7 @@ function confirmReturn() {
     if (total <= 0) {
 
 
-        alert(
+        posDialog.alert(
             "Please enter at least one quantity to return."
         );
 
@@ -1217,13 +1218,16 @@ function confirmReturn() {
     }
 
 
-    return confirm(
+    form.dataset.confirming = '1';
+    try {
+    if (await posDialog.confirm(
 
         "Return "
         + total.toFixed(2)
         + " item(s) to inventory?"
 
-    );
+    )) HTMLFormElement.prototype.submit.call(form);
+    } finally { delete form.dataset.confirming; }
 
 }
 

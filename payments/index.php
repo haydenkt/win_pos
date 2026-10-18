@@ -100,7 +100,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                         <?php endif; ?>
                         <a href="../invoices/view.php?id=<?=(int)$row['invoice_id'];?>" class="btn btn-info btn-sm" title="View invoice"><i class="fa fa-eye"></i></a>
                         <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
-                            <a href="delete.php?id=<?=(int)$row['id'];?>" class="btn btn-danger btn-sm" title="Delete payment" onclick="return confirm('Delete this payment?');"><i class="fa fa-trash"></i></a>
+                            <a href="delete.php?id=<?=(int)$row['id'];?>" class="btn btn-danger btn-sm" title="Delete payment" data-confirm="Delete this payment?"><i class="fa fa-trash"></i></a>
                         <?php endif; ?>
                         </div>
                     </td>

@@ -788,7 +788,7 @@ if(mysqli_num_rows($result)==0){
 
 <script>
 
-alert("No customer records found");
+posDialog.alert("No customer records found");
 
 </script>
 

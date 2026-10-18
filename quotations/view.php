@@ -46,7 +46,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
         <a class="btn btn-outline-primary" href="print.php?id=<?=$id;?>" target="_blank"><i class="fa fa-print"></i> Print quotation</a>
         <?php if (hasPermission('quotations_manage') && $quote['status'] !== 'Converted'): ?>
             <a class="btn btn-primary" href="add.php?id=<?=$id;?>"><i class="fa fa-pen"></i> Edit</a>
-            <form action="delete.php" method="post" onsubmit="return confirm('Delete this quotation? This cannot be undone.');">
+            <form action="delete.php" method="post" data-confirm="Delete this quotation? This cannot be undone.">
                 <input type="hidden" name="csrf_token" value="<?=htmlspecialchars($_SESSION['quotation_csrf']);?>">
                 <input type="hidden" name="id" value="<?=$id;?>">
                 <button type="submit" class="btn btn-outline-danger"><i class="fa fa-trash"></i> Delete</button>

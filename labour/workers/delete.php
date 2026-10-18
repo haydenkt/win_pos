@@ -42,10 +42,13 @@ $transaction_count = $stmt->get_result()->fetch_assoc()['total'];
 if ($record_count > 0 || $transaction_count > 0) {
 
     echo "
-    <script>
-        alert('This worker cannot be deleted because labour records or transactions already exist.');
-        window.location='index.php';
-    </script>
+    <script src='/assets/js/pos-dialog.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+ await posDialog.alert('This worker cannot be deleted because labour records or transactions already exist.');
+ window.location.href='index.php';
+});
+</script>
     ";
     exit();
 }
@@ -67,10 +70,13 @@ if ($stmt->execute()) {
 } else {
 
     echo "
-    <script>
-        alert('Unable to delete worker.');
-        window.location='index.php';
-    </script>
+    <script src='/assets/js/pos-dialog.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+ await posDialog.alert('Unable to delete worker.');
+ window.location.href='index.php';
+});
+</script>
     ";
 }
 ?>

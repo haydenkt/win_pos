@@ -685,23 +685,6 @@ PAYMENT SUMMARY
 
 
 
-<tr>
-
-<td>
-
-တပ်ဆင်ခ
-
-</td>
-
-
-<td>
-
-<?=number_format($invoice['installation_cost']);?>
-
-</td>
-
-
-</tr>
 
 
 
@@ -784,29 +767,6 @@ PAYMENT SUMMARY
 </table>
 
 
-<?php if($show_notes=="Yes"){ ?>
-
-
-<div class="section-title">
-
-မှတ်ချက်
-
-</div>
-
-
-
-
-<div class="notes">
-
-
-<?=nl2br(htmlspecialchars($invoice['notes'] ?? ''));?>
-
-
-</div>
-
-
-
-<?php } ?>
 
 
 

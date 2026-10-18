@@ -63,7 +63,7 @@ require_once __DIR__.'/../includes/sidebar.php';
                         <a href="view.php?id=<?=$row['id'];?>" class="btn btn-sm btn-info" title="View quotation"><i class="fa fa-eye"></i></a>
                         <?php if (hasPermission('quotations_manage') && $row['status'] !== 'Converted'): ?>
                             <a href="add.php?id=<?=$row['id'];?>" class="btn btn-sm btn-primary" title="Edit quotation"><i class="fa fa-pen"></i></a>
-                            <form action="delete.php" method="post" class="d-inline" onsubmit="return confirm('Delete this quotation? This cannot be undone.');">
+                            <form action="delete.php" method="post" class="d-inline" data-confirm="Delete this quotation? This cannot be undone.">
                                 <input type="hidden" name="csrf_token" value="<?=htmlspecialchars($_SESSION['quotation_csrf']);?>">
                                 <input type="hidden" name="id" value="<?=(int)$row['id'];?>">
                                 <button type="submit" class="btn btn-sm btn-danger" title="Delete quotation"><i class="fa fa-trash"></i></button>

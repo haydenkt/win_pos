@@ -8,7 +8,7 @@ const put=r=>dbOp('drafts','readwrite',s=>s.put(r));
 const all=()=>dbOp('drafts','readonly',s=>s.getAll());
 function uid(){const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');}
 function localDate(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function allowLeave(){return !dirty||confirm('You have unsaved changes. Leave without saving them?');}
+async function allowLeave(){return !dirty||await posDialog.confirm('You have unsaved changes. Leave without saving them?');}
 function button(text,action){const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=()=>run(action);return b;}
 async function run(action){try{await action();}catch(e){message(e.message||'Something went wrong. Your saved drafts have not been removed.');}}
 async function request(options={}){
@@ -23,7 +23,7 @@ function customerOptions(){
  $('new').disabled=!account;
 }
 async function connect(){
- if(busy||photoBusy)return;if(!allowLeave())return;
+ if(busy||photoBusy)return;if(!(await allowLeave()))return;
  message('Connecting…');const data=await request();
  account={id:Number(data.user_id),name:data.name,customers:data.customers,updated:Date.now()};csrf=data.csrf;
  await dbOp('meta','readwrite',s=>s.put(account,'account'));
@@ -41,8 +41,8 @@ function addMeasurement(data={}){
 function renderPhotos(){
  $('photos').replaceChildren();photos.forEach((src,index)=>{const box=document.createElement('div');box.className='photo';const img=document.createElement('img');img.src=src;img.alt=`Site photo ${index+1}`;box.append(img);if(current?.status==='draft')box.append(button('Remove photo',()=>{photos.splice(index,1);dirty=true;renderPhotos();}));$('photos').append(box);});
 }
-function openRecord(record){
- if(busy||photoBusy||!allowLeave())return;
+async function openRecord(record){
+ if(busy||photoBusy||!(await allowLeave()))return;
  current=structuredClone(record);const d=current.data;photos=[...d.photos];customerOptions();
  $('customer').value=String(d.customer_id);if($('customer').value==='')$('customer').add(new Option(`Customer #${d.customer_id}`,String(d.customer_id),true,true));
  for(const key of ['name','phone','address','notes'])$(key).value=d[key]||'';$('date').value=d.survey_date;
@@ -87,7 +87,7 @@ async function sync(){
 }
 async function list(){
  $('drafts').replaceChildren();const records=(await all()).filter(r=>r.owner===account?.id).sort((a,b)=>b.updated-a.updated);
- for(const r of records){const box=document.createElement('div');box.className='draft';const title=document.createElement('strong');title.textContent=`${r.data.name||'Customer #'+r.data.customer_id} · ${r.data.survey_date}`;const detail=document.createElement('p');detail.textContent=r.status==='synced'?`Synced · survey #${r.survey_id}`:r.status==='pending'?'Awaiting upload confirmation — retry safely':'Saved on this phone only';box.append(title,detail,button(r.status==='synced'?'View phone copy':'Open / sync',()=>{if(busy)return;openRecord(r);}));if(r.status==='synced'){const link=document.createElement('a');link.textContent='Open in POS';link.href=`../view.php?id=${Number(r.survey_id)}`;link.style.marginLeft='12px';box.append(link);} $('drafts').append(box);}
+ for(const r of records){const box=document.createElement('div');box.className='draft';const title=document.createElement('strong');title.textContent=`${r.data.name||'Customer #'+r.data.customer_id} · ${r.data.survey_date}`;const detail=document.createElement('p');detail.textContent=r.status==='synced'?`Synced · survey #${r.survey_id}`:r.status==='pending'?'Awaiting upload confirmation — retry safely':'Saved on this phone only';box.append(title,detail,button(r.status==='synced'?'View phone copy':'Open / sync',()=>{if(busy)return;return openRecord(r);}));if(r.status==='synced'){const link=document.createElement('a');link.textContent='Open in POS';link.href=`../view.php?id=${Number(r.survey_id)}`;link.style.marginLeft='12px';box.append(link);} $('drafts').append(box);}
  if(!records.length)$('drafts').textContent='No drafts for this account on this device.';
 }
 async function resizePhoto(file){
@@ -97,11 +97,11 @@ async function resizePhoto(file){
  }finally{URL.revokeObjectURL(url);}
 }
 $('connect').onclick=()=>run(connect);
-$('new').onclick=()=>run(async()=>{if(busy||photoBusy||!allowLeave())return;dirty=false;const id=uid();openRecord({id,owner:account.id,status:'draft',updated:Date.now(),data:{id,owner:account.id,customer_id:0,name:'',phone:'',address:'',notes:'',survey_date:localDate(),items:[{}],photos:[]}});await save();});
+$('new').onclick=()=>run(async()=>{if(busy||photoBusy||!(await allowLeave()))return;dirty=false;const id=uid();await openRecord({id,owner:account.id,status:'draft',updated:Date.now(),data:{id,owner:account.id,customer_id:0,name:'',phone:'',address:'',notes:'',survey_date:localDate(),items:[{}],photos:[]}});await save();});
 $('editor').oninput=()=>{if(current?.status==='draft')dirty=true;};
 $('editor').onsubmit=e=>{e.preventDefault();run(save);};
 $('sync').onclick=()=>run(sync);
-$('close').onclick=()=>{if(busy||photoBusy)return;if(allowLeave()){$('editor').hidden=true;current=null;dirty=false;}};
+$('close').onclick=async()=>{if(busy||photoBusy)return;if(await allowLeave()){$('editor').hidden=true;current=null;dirty=false;}};
 $('addItem').onclick=()=>{if($('items').children.length>=100)return message('Maximum 100 measurements.');addMeasurement();dirty=true;};
 $('customer').onchange=()=>{const c=account.customers.find(c=>String(c.id)===$('customer').value);$('name').value=c?.name||'';$('phone').value=c?.phone||'';if(c)$('address').value=c.address||'';dirty=true;};
 $('photoInput').onchange=()=>run(async()=>{if(photoBusy)return;photoBusy=true;try{for(const file of $('photoInput').files){if(photos.length>=6)throw new Error('Maximum six photos.');photos.push(await resizePhoto(file));dirty=true;renderPhotos();}}finally{photoBusy=false;$('photoInput').value='';}});

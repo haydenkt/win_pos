@@ -32,6 +32,7 @@ if (!in_array($app_theme_mode, ['light', 'dark', 'system'], true)) {
         })();
     </script>
 
+    <script src="/assets/js/pos-dialog.js?v=1"></script>
     <link rel="icon" type="image/png" href="/assets/images/favicon.png">
     <link rel="stylesheet" href="/assets/css/bootstrap.min.css">
     <link rel="stylesheet" href="/assets/fontawesome/css/fontawesome.css">

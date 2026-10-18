@@ -3515,7 +3515,7 @@ document
 
                 event.preventDefault();
 
-                alert(
+                posDialog.alert(
                     'Cash and digital payments together cannot be higher than the invoice total.'
                 );
 
@@ -3552,7 +3552,7 @@ document
 
                 event.preventDefault();
 
-                alert(
+                posDialog.alert(
                     'Please select or add a customer.'
                 );
 
@@ -3567,7 +3567,7 @@ document
 
                 event.preventDefault();
 
-                alert(
+                posDialog.alert(
                     'Please add an invoice item.'
                 );
 
@@ -3606,7 +3606,7 @@ document
 
                     event.preventDefault();
 
-                    alert(
+                    posDialog.alert(
                         'Each item needs a product or custom name.'
                     );
 
@@ -3650,7 +3650,7 @@ document
 
                         event.preventDefault();
 
-                        alert(
+                        posDialog.alert(
                             'Please enter width and height for SQFT items.'
                         );
 
@@ -3682,7 +3682,7 @@ document
 
                         event.preventDefault();
 
-                        alert(
+                        posDialog.alert(
                             'Please enter a valid manual price.'
                         );
 

@@ -105,13 +105,13 @@ if(isset($_POST['save'])){
 
     echo "
 
-    <script>
-
-    alert('Invoice settings updated');
-
-    window.location='invoice.php';
-
-    </script>
+    <script src='/assets/js/pos-dialog.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+ await posDialog.alert('Invoice settings updated');
+ window.location.href='invoice.php';
+});
+</script>
 
     ";
 

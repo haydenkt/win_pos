@@ -338,7 +338,7 @@ class="btn btn-warning btn-sm">
 
 class="btn btn-danger btn-sm"
 
-onclick="return confirm('Delete this order?');">
+data-confirm="Delete this order?">
 
 <i class="fa fa-trash"></i>
 

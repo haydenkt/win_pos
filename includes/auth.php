@@ -16,10 +16,13 @@ function checkRole($roles=[]){
     if(!in_array($_SESSION['role'],$roles)){
 
 
-        echo "<script>
-        alert('You do not have permission to access this page');
-        window.location.href='/dashboard.php';
-        </script>";
+        echo "<script src='/assets/js/pos-dialog.js'></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+ await posDialog.alert('You do not have permission to access this page');
+ window.location.href='/dashboard.php';
+});
+</script>";
 
         exit();
 
