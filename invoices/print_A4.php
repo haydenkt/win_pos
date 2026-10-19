@@ -271,17 +271,10 @@ Email:
 <div class="invoice-title">
 
 
-<h1>
-<?=htmlspecialchars($invoice_title);?>
-</h1>
 
 
 <p>
-<?=htmlspecialchars($invoice_prefix);?>
--
-<?=date('Y');?>
--
-<?=str_pad($invoice['id'],6,'0',STR_PAD_LEFT);?>
+<?=htmlspecialchars($invoice['invoice_no']);?>
 </p>
 
 

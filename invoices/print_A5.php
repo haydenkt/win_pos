@@ -331,17 +331,9 @@ Email:
 
 
 
-<div class="title">
-
-
-<?=htmlspecialchars($invoice_title);?>
-
-
-
 <?php if(($invoice['print_count'] ?? 0) > 1){ ?>
 
-
-<br>
+<div style="text-align:center; margin:4px 0;">
 
 
 <span style="
@@ -358,11 +350,9 @@ REPRINT
 
 </span>
 
+</div>
 
 <?php } ?>
-
-
-</div>
 
 
 
@@ -386,7 +376,7 @@ REPRINT
 <br>
 
 
-<?=htmlspecialchars($invoice_prefix);?>-<?=date('Y');?>-<?=str_pad($invoice['id'],6,'0',STR_PAD_LEFT);?>
+<?=htmlspecialchars($invoice['invoice_no']);?>
 
 
 </div>
