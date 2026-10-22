@@ -38,7 +38,8 @@ customers.name AS customer_name,
 
 customers.phone AS customer_phone,
 
-customers.address AS customer_address
+customers.address AS customer_address,
+survey_taker.username AS survey_taker_name
 
 
 FROM site_surveys
@@ -47,6 +48,16 @@ FROM site_surveys
 LEFT JOIN customers
 
 ON site_surveys.customer_id = customers.id
+
+LEFT JOIN (
+    SELECT survey_id, MIN(user_id) AS user_id
+    FROM survey_mobile_sync
+    WHERE survey_id IS NOT NULL
+    GROUP BY survey_id
+    HAVING COUNT(DISTINCT user_id) = 1
+) AS mobile_taker ON mobile_taker.survey_id = site_surveys.id
+LEFT JOIN users AS survey_taker
+    ON survey_taker.id = COALESCE(site_surveys.created_by, mobile_taker.user_id)
 
 
 ORDER BY site_surveys.id DESC
@@ -135,6 +146,8 @@ New Survey
 
 <th>Date</th>
 
+<th>Survey taken by</th>
+
 <th>Status</th>
 
 <th width="150">
@@ -207,6 +220,8 @@ while($row=mysqli_fetch_assoc($query)){
 <?=date('d-m-Y',strtotime($row['created_at']));?>
 
 </td>
+
+<td><?=htmlspecialchars($row['survey_taker_name'] ?? 'Not recorded', ENT_QUOTES, 'UTF-8');?></td>
 
 
 
@@ -391,6 +406,12 @@ Completed
 
 
 
+<p>
+
+<strong>Survey taken by:</strong>
+<?=htmlspecialchars($row['survey_taker_name'] ?? 'Not recorded', ENT_QUOTES, 'UTF-8');?>
+
+</p>
 <p>
 
 <i class="fa fa-phone"></i>

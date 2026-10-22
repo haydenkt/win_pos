@@ -17,6 +17,10 @@ $conn->begin_transaction();
 try {
     $hash=hash('sha256',json_encode($payload));
     $id=surveyMobilePersist($conn,$valid,0,$hash);
+    $taker=$conn->prepare('SELECT created_by FROM site_surveys WHERE id=?');
+    $taker->execute([$id]);
+    $savedTaker=$taker->get_result()->fetch_assoc();
+    if ($savedTaker['created_by'] === null || (int)$savedTaker['created_by'] !== 0) throw new RuntimeException('Survey taker was not recorded');
     $again=surveyMobilePersist($conn,$valid,0,$hash);
     if ($id!==$again) throw new RuntimeException('Retry duplicated survey');
     try {surveyMobilePersist($conn,$valid,1,$hash);throw new RuntimeException('Owner mismatch accepted');}catch(InvalidArgumentException $expected){}

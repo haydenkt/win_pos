@@ -160,10 +160,11 @@ $sql = "
         survey_date,
         address,
         notes,
-        status
+        status,
+        created_by
     )
 
-    VALUES (?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?)
 
 ";
 
@@ -246,13 +247,15 @@ if ($customer_type === 'old') {
 // INSERT SURVEY
 // ========================================
 
+$created_by = !empty($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null;
 $stmt->bind_param(
-    "issss",
+    "issssi",
     $customer_id,
     $survey_date,
     $address,
     $notes,
-    $status
+    $status,
+    $created_by
 );
 
 

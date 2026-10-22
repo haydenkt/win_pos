@@ -163,11 +163,11 @@ function quotationOrderItem(mysqli $conn, int $orderId, array $item): int
     [$wf, $hf] = quotationFeet($item);
     $pid = $item['factory_product_id'] ?: null;
     $product = $pid ? quotationLookup($conn, 'ORDER', (int) $pid) : null;
-    $stmt = $conn->prepare('INSERT INTO order_items (order_id,category_id,material_type_id,factory_product_id,product_name,calculation_type,width,height,width_mm,height_mm,width_ft,height_ft,quantity,sqft,description,glass_type_id,glass_price,final_price_per_sqft) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+    $stmt = $conn->prepare('INSERT INTO order_items (order_id,category_id,material_type_id,factory_product_id,product_name,calculation_type,width,height,width_mm,height_mm,width_ft,height_ft,quantity,sqft,description,glass_type_id,glass_price,final_price_per_sqft,measurement_unit) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
     $stmt->execute([$orderId, $product['category_id'] ?? null, $product['material_type_id'] ?? null, $pid,
         $item['product_name'], $item['calculation_type'] ?? 'SQFT', $wf, $hf, $item['width_mm'], $item['height_mm'],
         $wf, $hf, $item['quantity'], $item['sqft'], $item['description'], $item['glass_type_id'] ?? null,
-        $item['glass_price'] ?? 0, $item['unit_price']]);
+        $item['glass_price'] ?? 0, $item['unit_price'], $item['measurement_unit'] ?? null]);
     return $conn->insert_id;
 }
 

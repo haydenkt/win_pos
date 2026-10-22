@@ -25,6 +25,7 @@ if (!in_array($app_theme_mode, ['light', 'dark', 'system'], true)) {
         (() => {
             const root = document.documentElement;
             const mode = root.dataset.themeMode || 'system';
+            try { localStorage.setItem('winposThemeMode', mode); } catch (_) {}
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             root.dataset.theme = mode === 'dark' || (mode === 'system' && prefersDark)
                 ? 'dark'

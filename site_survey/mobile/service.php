@@ -66,8 +66,8 @@ function surveyMobilePersist(mysqli $conn, array $data, int $userId, string $has
         $stmt=$conn->prepare('INSERT INTO customers (name,phone,address) VALUES (?,?,?)');
         $stmt->execute([$data['name'],$data['phone'],$data['address']]); $customerId=$conn->insert_id;
     }
-    $stmt=$conn->prepare("INSERT INTO site_surveys (customer_id,survey_date,address,notes,status) VALUES (?,?,?,?,'Pending')");
-    $stmt->execute([$customerId,$data['survey_date'],$data['address'],$data['notes']]); $surveyId=$conn->insert_id;
+    $stmt=$conn->prepare("INSERT INTO site_surveys (customer_id,survey_date,address,notes,status,created_by) VALUES (?,?,?,?,'Pending',?)");
+    $stmt->execute([$customerId,$data['survey_date'],$data['address'],$data['notes'],$userId]); $surveyId=$conn->insert_id;
     $stmt=$conn->prepare('INSERT INTO survey_measurements (survey_id,item_name,width,height,quantity,glass_type,frame_color,opening_type,notes) VALUES (?,?,?,?,?,?,?,?,?)');
     foreach ($data['items'] as $r) $stmt->execute([$surveyId,$r['item_name'],$r['width'],$r['height'],$r['quantity'],$r['glass_type'],$r['frame_color'],$r['opening_type'],$r['notes']]);
     $stmt=$conn->prepare("INSERT INTO survey_mobile_photos (survey_id,mime_type,image_data) VALUES (?,'image/jpeg',?)");

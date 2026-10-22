@@ -10,6 +10,7 @@ if (!isset($_SESSION['user'])) {
 }
 
 include_once "../config/database.php";
+require_once __DIR__ . '/../includes/item_measurement.php';
 
 
 if (!isset($_GET['id'])) {
@@ -145,6 +146,7 @@ $stmt = $conn->prepare("
 
         oi.width_mm,
         oi.height_mm,
+        oi.measurement_unit,
 
         oi.width_ft,
         oi.height_ft,
@@ -654,72 +656,7 @@ SERVICE
 
 <?php
 
-$width_ft =
-    floatval(
-        $item['width_ft'] ?? 0
-    );
-
-$height_ft =
-    floatval(
-        $item['height_ft'] ?? 0
-    );
-
-$width_mm =
-    floatval(
-        $item['width_mm'] ?? 0
-    );
-
-$height_mm =
-    floatval(
-        $item['height_mm'] ?? 0
-    );
-
-
-if (
-    $width_ft > 0 ||
-    $height_ft > 0
-) {
-
-    echo number_format(
-        $width_ft,
-        2
-    );
-
-    echo " × ";
-
-    echo number_format(
-        $height_ft,
-        2
-    );
-
-    echo " ft";
-
-}
-elseif (
-    $width_mm > 0 ||
-    $height_mm > 0
-) {
-
-    echo number_format(
-        $width_mm,
-        0
-    );
-
-    echo " × ";
-
-    echo number_format(
-        $height_mm,
-        0
-    );
-
-    echo " mm";
-
-}
-else {
-
-    echo "-";
-
-}
+echo htmlspecialchars(itemMeasurementLabel($item), ENT_QUOTES, 'UTF-8');
 
 ?>
 

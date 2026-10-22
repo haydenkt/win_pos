@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/../includes/page_loading.php';
 
 include_once __DIR__ . "/config.php";
 

@@ -244,7 +244,7 @@ echo "
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
  await posDialog.alert('Payment Saved Successfully');
- window.location.href='../invoices/index.php';
+ window.location.href='add.php?invoice_id={$invoice_id}';
 });
 </script>
 

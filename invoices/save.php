@@ -1333,12 +1333,14 @@ if (!empty($initial_payments)) {
                         quantity,
                         sqft,
                         description,
-                        final_price_per_sqft
+                        final_price_per_sqft,
+                        measurement_unit
                     )
 
                     VALUES
 
                     (
+                        ?,
                         ?,
                         ?,
                         ?,
@@ -1373,7 +1375,7 @@ if (!empty($initial_payments)) {
 
             $stmt->bind_param(
 
-                "iiiisssddddddidsd",
+                "iiiisssddddddidsds",
 
                 $order_id,
                 $category_id,
@@ -1391,7 +1393,8 @@ if (!empty($initial_payments)) {
                 $qty,
                 $sqft,
                 $description,
-                $price
+                $price,
+                $measurement_unit
 
             );
 
