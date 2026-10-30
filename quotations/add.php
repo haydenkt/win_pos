@@ -111,7 +111,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <div class="col-md-8">
                         <label for="customer_id">Customer</label>
                         <div id="existingCustomerBox">
-                            <select name="customer_id" id="customer_id" class="form-select">
+                            <select name="customer_id" id="customer_id" class="form-select" data-customer-search>
                                 <option value="">-- Select Customer --</option>
                                 <?php foreach ($customers as $customer): ?>
                                     <option value="<?=$customer['id'];?>" <?=(int)$quotation['customer_id']===(int)$customer['id']?'selected':'';?>><?=htmlspecialchars($customer['name'] . (!empty($customer['phone']) ? ' - ' . $customer['phone'] : ''));?></option>

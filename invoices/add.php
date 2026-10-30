@@ -439,6 +439,7 @@ html[data-theme="dark"] #invoiceForm .btn-outline-danger:hover { color: #0b1220;
                     <select
                         name="customer_id"
                         id="customer_id"
+                        data-customer-search
                         class="form-select"
                     >
 
