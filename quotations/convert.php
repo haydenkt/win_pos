@@ -58,6 +58,8 @@ if ($target === 'invoice') {
 $conn->begin_transaction();
 
 try {
+    require_once __DIR__ . '/../includes/payment_provider.php';
+    $paymentProvider = $paymentAmount > 0 ? paymentProvider($paymentMethod, trim((string)($_POST['payment_provider'] ?? ''))) : null;
     $stmt = $conn->prepare("SELECT * FROM quotations WHERE id=? AND status<>'Converted' FOR UPDATE");
     $stmt->bind_param('i', $id);
     $stmt->execute();
@@ -114,8 +116,8 @@ try {
         if ($paymentAmount > 0) {
             $paymentType = $balance <= 0 ? 'Full Payment' : 'Deposit';
             $paymentNote = 'Received while converting quotation ' . $quotation['quote_no'];
-            $stmt = $conn->prepare('INSERT INTO payments (invoice_id,customer_id,order_id,amount,payment_method,reference_no,payment_type,payment_date,note,created_at) VALUES (?,?,NULL,?,?,?,?,?,?,NOW())');
-            $stmt->bind_param('iidsssss', $newId, $quotation['customer_id'], $paymentAmount, $paymentMethod, $referenceNo, $paymentType, $paymentDate, $paymentNote);
+            $stmt = $conn->prepare('INSERT INTO payments (invoice_id,customer_id,order_id,amount,payment_method,payment_provider,reference_no,payment_type,payment_date,note,created_at) VALUES (?,?,NULL,?,?,?,?,?,?,?,NOW())');
+            $stmt->bind_param('iidssssss', $newId, $quotation['customer_id'], $paymentAmount, $paymentMethod, $paymentProvider, $referenceNo, $paymentType, $paymentDate, $paymentNote);
             $stmt->execute();
             $paymentId = $conn->insert_id;
             auditLog($conn, 'CREATE', 'payment', $paymentId, 'Added payment while converting ' . $quotation['quote_no'], null, ['invoice_id' => $newId, 'amount' => $paymentAmount, 'date' => $paymentDate]);

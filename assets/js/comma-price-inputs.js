@@ -29,7 +29,7 @@
         const formatted = formatValue(oldValue);
         input.value = formatted;
 
-        const step = Number(input.dataset.priceStep || 50);
+        const step = Number(input.dataset.priceStep || 5);
         const invalidStep = formatted !== ''
             && step > 0
             && Math.abs(numericValue(formatted) % step) > 1e-7;

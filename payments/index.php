@@ -91,7 +91,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
                     <td><?=htmlspecialchars((string)($row['customer_name'] ?? '—'));?><br><small><?=htmlspecialchars((string)($row['customer_phone'] ?? ''));?></small></td>
                     <td><?=number_format((float)$row['amount']);?></td>
                     <td><?=htmlspecialchars((string)$row['payment_type']);?></td>
-                    <td><?=htmlspecialchars((string)$row['payment_method']);?></td>
+                    <td><?=htmlspecialchars(paymentMethodLabel($row));?></td>
                     <td><?=date('d-m-Y', strtotime($row['payment_date']));?></td>
                     <td>
                         <div class="d-flex gap-1 flex-nowrap">

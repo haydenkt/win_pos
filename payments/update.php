@@ -56,12 +56,19 @@ if (!$old_payment) {
     exit();
 }
 
+require_once __DIR__ . '/../includes/payment_provider.php';
+try {
+    $legacy = $payment_method === $old_payment['payment_method'] && empty($old_payment['payment_provider']);
+    $payment_provider = paymentProvider($payment_method, trim((string)($_POST['payment_provider'] ?? '')), !$legacy);
+} catch (InvalidArgumentException $e) {
+    $_SESSION['error'] = $e->getMessage(); header('Location:edit.php?id='.$id); exit;
+}
 $stmt = $conn->prepare(
     'UPDATE payments
-     SET payment_method = ?, reference_no = ?
+     SET payment_method = ?, reference_no = ?, payment_provider = ?
      WHERE id = ?'
 );
-$stmt->bind_param('ssi', $payment_method, $reference_no, $id);
+$stmt->bind_param('sssi', $payment_method, $reference_no, $payment_provider, $id);
 
 if ($stmt->execute()) {
     auditLog(
@@ -73,6 +80,7 @@ if ($stmt->execute()) {
         $old_payment,
         [
             'payment_method' => $payment_method,
+            'payment_provider' => $payment_provider,
             'reference_no' => $reference_no
         ]
     );
@@ -86,4 +94,3 @@ if ($stmt->execute()) {
 
 $stmt->close();
 exit();
-

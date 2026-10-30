@@ -307,7 +307,7 @@ Action
 
 <td>
 
-<?php echo $row['payment_method']; ?>
+<?php echo htmlspecialchars(paymentMethodLabel($row)); ?>
 
 </td>
 

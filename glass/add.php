@@ -236,7 +236,7 @@ name="price_per_sqft"
 
 class="form-control js-comma-price"
 
-step="50"
+step="5"
 
 min="0"
 

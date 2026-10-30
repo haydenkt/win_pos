@@ -768,7 +768,7 @@ html[data-theme="dark"] #invoiceForm .btn-outline-danger:hover { color: #0b1220;
                         <input
                             type="number"
                             min="0"
-                            step="500"
+                            step="5"
                             name="discount"
                             id="discount"
                             class="form-control"
@@ -799,7 +799,7 @@ html[data-theme="dark"] #invoiceForm .btn-outline-danger:hover { color: #0b1220;
                         <input
                             type="number"
                             min="0"
-                            step="50"
+                            step="5"
                             name="installation_cost"
                             id="installation_cost"
                             class="form-control"
@@ -858,7 +858,7 @@ html[data-theme="dark"] #invoiceForm .btn-outline-danger:hover { color: #0b1220;
                         <input
                             type="number"
                             min="0"
-                            step="500"
+                            step="5"
                             name="cash_payment"
                             id="cash_payment"
                             class="form-control"
@@ -889,7 +889,7 @@ html[data-theme="dark"] #invoiceForm .btn-outline-danger:hover { color: #0b1220;
                         <input
                             type="number"
                             min="0"
-                            step="500"
+                            step="5"
                             name="digital_payment"
                             id="digital_payment"
                             class="form-control"
@@ -1447,7 +1447,7 @@ function input(
             type="${isMoney ? 'text' : 'number'}"
             name="${name}[]"
             class="form-control${isMoney ? ' money-input' : ''}"
-            ${isMoney ? 'inputmode="decimal" data-money-step="50"' : ''}
+            ${isMoney ? 'inputmode="decimal" data-money-step="5"' : ''}
             value="${escapeHtml(value)}"
             ${options}
         >
@@ -1839,7 +1839,7 @@ function sqftCells(state)
                 type="text"
                 inputmode="decimal"
                 class="form-control base-price money-input"
-                data-money-step="50"
+                data-money-step="5"
                 value="${escapeHtml(
                     state.basePrice
                 )}"
@@ -1998,7 +1998,7 @@ function manualCells(state)
             ${input(
                 'price',
                 state.price || '',
-                'min="0" step="50" required'
+                'min="0" step="5" required'
             )}
 
         </td>
@@ -3000,6 +3000,7 @@ function invoiceDraftData()
                 'digital_payment'
             ).value,
 
+        digitalProvider: document.querySelector('[name="digital_provider"]')?.value || '',
         digitalMethod:
             document.getElementById(
                 'digital_method'
@@ -3241,6 +3242,8 @@ function restoreInvoiceDraft()
     document.getElementById(
         'digital_method'
     ).value = draft.digitalMethod || 'Mobile Payment';
+    if (window.restorePaymentProvider) window.restorePaymentProvider('digital_method', draft.digitalProvider);
+    else document.getElementById('digital_method').dataset.provider = draft.digitalProvider || '';
 
 
     document.getElementById(

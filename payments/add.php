@@ -445,7 +445,7 @@ break;
 
 <span class="badge bg-<?=$color;?>">
 
-<?=$pay['payment_method'];?>
+<?=htmlspecialchars(paymentMethodLabel($pay));?>
 
 </span>
 
@@ -679,7 +679,7 @@ Amount
 
 <input type="number"
 
-step="10"
+step="5"
 
 name="amount"
 

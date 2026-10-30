@@ -104,7 +104,7 @@ include '../includes/sidebar.php';
 
                     <div class="mb-3">
                         <label for="payment_method" class="form-label">Payment Method</label>
-                        <select id="payment_method" name="payment_method" class="form-select" required>
+                        <select id="payment_method" name="payment_method" class="form-select" data-provider="<?=htmlspecialchars((string)($payment['payment_provider'] ?? ''), ENT_QUOTES);?>" data-legacy-method="<?=htmlspecialchars($payment['payment_method'], ENT_QUOTES);?>" required>
                             <?php foreach ($payment_methods as $method) { ?>
                                 <option value="<?=htmlspecialchars($method);?>"
                                     <?=$payment['payment_method'] === $method ? 'selected' : '';?>>

@@ -155,7 +155,7 @@ require_once __DIR__ . '/../includes/sidebar.php';
             <div class="card-body">
                 <div class="row justify-content-end"><div class="col-md-5">
                     <div class="row mb-2"><label class="col-6 col-form-label" for="subtotal">Subtotal</label><div class="col-6"><input type="text" id="subtotal" class="form-control" readonly value="0.00"></div></div>
-                    <div class="row mb-2"><label class="col-6 col-form-label" for="discount">Discount</label><div class="col-6"><input type="number" min="0" step="500" name="discount" id="discount" class="form-control" value="<?=(float)$quotation['discount']>0?htmlspecialchars((string)$quotation['discount']):'';?>"></div></div>
+                    <div class="row mb-2"><label class="col-6 col-form-label" for="discount">Discount</label><div class="col-6"><input type="number" min="0" step="5" name="discount" id="discount" class="form-control" value="<?=(float)$quotation['discount']>0?htmlspecialchars((string)$quotation['discount']):'';?>"></div></div>
                     <div class="row mb-2"><label class="col-6 col-form-label" for="grand_total">Grand Total</label><div class="col-6"><input type="text" id="grand_total" class="form-control" readonly value="0.00"></div></div>
                     <p class="small text-muted mt-3 mb-0">Receive payment when converting this quotation to an invoice.</p>
                 </div></div>
@@ -395,7 +395,7 @@ function input(
             type="${isMoney ? 'text' : 'number'}"
             name="${name}[]"
             class="form-control${isMoney ? ' money-input' : ''}"
-            ${isMoney ? 'inputmode="decimal" data-money-step="50"' : ''}
+            ${isMoney ? 'inputmode="decimal" data-money-step="5"' : ''}
             value="${escapeHtml(value)}"
             ${options}
         >
@@ -671,7 +671,7 @@ function sqftCells(state)
                 inputmode="decimal"
                 class="form-control base-price money-input"
                 name="base_price[]"
-                data-money-step="50"
+                data-money-step="5"
                 value="${escapeHtml(
                     state.basePrice
                 )}"
@@ -774,7 +774,7 @@ function manualCells(state)
             ${input(
                 'price',
                 state.price || '',
-                'min="0" step="50" required'
+                'min="0" step="5" required'
             )}
         </td>
         <!-- TOTAL -->

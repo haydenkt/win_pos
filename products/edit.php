@@ -234,7 +234,7 @@ Purchase Price
 
 
 <input type="number"
-step="50"
+step="5"
 name="purchase_price"
 class="form-control js-comma-price"
 value="<?=$product['purchase_price'];?>">
@@ -255,7 +255,7 @@ Selling Price
 
 
 <input type="number"
-step="50"
+step="5"
 name="selling_price"
 class="form-control js-comma-price"
 value="<?=$product['selling_price'];?>">

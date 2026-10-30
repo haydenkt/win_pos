@@ -5,6 +5,7 @@ if (!isset($conn)) {
 }
 
 require_once __DIR__ . '/setting.php';
+require_once __DIR__ . '/payment_provider.php';
 
 $app_theme_mode = getSetting($conn, 'system', 'theme_mode');
 if (!in_array($app_theme_mode, ['light', 'dark', 'system'], true)) {

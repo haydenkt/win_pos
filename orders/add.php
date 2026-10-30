@@ -655,7 +655,7 @@ readonly>
 
 <input type="number"
 
-step="50"
+step="5"
 
 name="price[]"
 
@@ -677,7 +677,7 @@ class="form-control price js-comma-price">
 
 <input type="number"
 
-step="50"
+step="5"
 
 name="unit_price[]"
 
@@ -1356,7 +1356,7 @@ Discount
 
 <input type="number"
 
-step="500"
+step="5"
 
 name="discount"
 
@@ -1380,7 +1380,7 @@ Installation Cost
 
 <input type="number"
 
-step="50"
+step="5"
 
 name="installation_cost"
 
@@ -1404,7 +1404,7 @@ Deposit
 
 <input type="number"
 
-step="500"
+step="5"
 
 name="deposit"
 

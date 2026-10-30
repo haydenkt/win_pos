@@ -610,7 +610,7 @@ Amount
 
 type="number"
 
-step="500"
+step="5"
 
 min="0"
 

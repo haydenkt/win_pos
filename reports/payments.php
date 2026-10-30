@@ -818,7 +818,7 @@ break;
 
 <span class="badge bg-<?=$method_color;?>">
 
-<?=$row['payment_method'];?>
+<?=htmlspecialchars(paymentMethodLabel($row));?>
 
 </span>
 

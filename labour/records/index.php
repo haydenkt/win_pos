@@ -614,7 +614,7 @@ readonly>
 
 name="cash[]"
 
-step="500"
+step="5"
 
 class="form-control cash"
 data-default="<?=htmlspecialchars((string)$worker['default_cash'], ENT_QUOTES)?>"

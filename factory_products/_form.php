@@ -80,7 +80,7 @@ $listUrl = $is_edit ? factoryProductListUrl($listContext) : 'index.php';
                 <div class="col-lg-6">
                     <label id="priceLabel" for="default_price" class="form-label">Default price per sqft</label>
                     <input id="default_price" type="number" name="default_price" class="form-control js-comma-price"
-                           min="0" step="50" value="<?=htmlspecialchars((string) ($product['default_price'] ?? ''));?>" required>
+                           min="0" step="5" value="<?=htmlspecialchars((string) ($product['default_price'] ?? ''));?>" required>
                 </div>
 
                 <div class="col-12">

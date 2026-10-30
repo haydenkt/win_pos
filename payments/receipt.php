@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../includes/payment_provider.php';
 
 session_start();
 
@@ -363,7 +364,7 @@ Method:
 
 <td>
 
-<?php echo $payment['payment_method']; ?>
+<?php echo htmlspecialchars(paymentMethodLabel($payment)); ?>
 
 </td>
 

@@ -30,6 +30,12 @@ $payment_method = mysqli_real_escape_string(
 );
 
 
+require_once __DIR__ . '/../includes/payment_provider.php';
+try {
+    $payment_provider = paymentProvider((string)$_POST['payment_method'], trim((string)($_POST['payment_provider'] ?? '')));
+} catch (InvalidArgumentException $e) { http_response_code(422); exit($e->getMessage()); }
+$provider_sql = $payment_provider === null ? 'NULL' : "'" . mysqli_real_escape_string($conn, $payment_provider) . "'";
+
 $reference_no = mysqli_real_escape_string(
     $conn,
     $_POST['reference_no']
@@ -133,6 +139,7 @@ customer_id,
 order_id,
 amount,
 payment_method,
+payment_provider,
 reference_no,
 payment_type,
 payment_date,
@@ -148,6 +155,7 @@ VALUES
 NULL,
 '$amount',
 '$payment_method',
+$provider_sql,
 '$reference_no',
 '$payment_type',
 '$payment_date',

@@ -160,7 +160,7 @@ Daily Pay
 
 name="daily_rate"
 
-step="50"
+step="5"
 
 class="form-control js-comma-price"
 
@@ -191,7 +191,7 @@ Default Cash
 
 name="default_cash"
 
-step="500"
+step="5"
 
 class="form-control"
 
@@ -228,7 +228,7 @@ Default Saving
 
 name="default_saving"
 
-step="500"
+step="5"
 
 class="form-control"
 

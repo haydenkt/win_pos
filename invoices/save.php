@@ -506,6 +506,8 @@ if (!$stmt->execute()) {
 // SAVE INITIAL PAYMENTS
 // =================================
 
+    require_once __DIR__ . '/../includes/payment_provider.php';
+    $digital_provider = $digital_payment > 0 ? paymentProvider($digital_method, trim((string)($_POST['digital_provider'] ?? ''))) : null;
     $initial_payments = [];
 
 
@@ -552,6 +554,7 @@ if (!empty($initial_payments)) {
             order_id,
             amount,
             payment_method,
+            payment_provider,
             reference_no,
             payment_type,
             payment_date,
@@ -565,6 +568,7 @@ if (!empty($initial_payments)) {
             ?,
             ?,
             NULL,
+            ?,
             ?,
             ?,
             ?,
@@ -602,14 +606,16 @@ if (!empty($initial_payments)) {
             (string) $initial_payment['note'];
 
 
+        $payment_provider = $payment_method === 'Cash' ? null : $digital_provider;
         $stmt->bind_param(
 
-            "iidssss",
+                "iidsssss",
 
             $invoice_id,
             $customer_id,
             $payment_amount,
             $payment_method,
+            $payment_provider,
             $reference_no,
             $payment_type,
             $payment_note

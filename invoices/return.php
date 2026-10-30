@@ -643,7 +643,7 @@ type="number"
 name="cost_price[]"
 class="form-control js-comma-price"
 min="0"
-step="50"
+step="5"
 value="0"
 >
 

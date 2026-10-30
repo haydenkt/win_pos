@@ -5,6 +5,7 @@
 
 <script src="/assets/js/bootstrap.bundle.min.js"></script>
 <script src="/assets/js/comma-price-inputs.js"></script>
+<script src="/assets/js/payment-provider.js?v=1"></script>
 <script src="/assets/js/list-filter-memory.js?v=1" data-user="<?=htmlspecialchars((string) ($_SESSION['user_id'] ?? ''));?>"></script>
 <script>
 (() => {
