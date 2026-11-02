@@ -17,6 +17,10 @@ $page_title = 'Labour summary';
 $month = trim($_GET['month'] ?? date('Y-m'));
 
 if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month)) {
+    if (defined('WINPOS_LABOUR_EXPORT')) {
+        http_response_code(422);
+        exit('Choose a valid report month.');
+    }
     $month = date('Y-m');
 }
 
@@ -164,6 +168,42 @@ while ($row = $result->fetch_assoc()) {
     $summary_rows[] = $row;
 }
 
+if (defined('WINPOS_LABOUR_EXPORT')) {
+    require_once __DIR__ . '/../../includes/simple_xlsx.php';
+    $headers = ['#', 'Worker', 'Earned', 'Cash Paid', 'Advance B/F', 'New Advance', 'Repaid', 'Outstanding', 'Salary Balance', 'Savings'];
+    $fields = ['earned', 'cash_paid', 'advance_brought_forward', 'advance_taken', 'advance_repaid', 'advance_balance', 'net_balance', 'saving_balance'];
+    $exportRows = [
+        [['value' => 'Win POS — Labour monthly report', 'type' => 'string', 'style' => 1]],
+        [['value' => 'Month: ' . $month, 'type' => 'string']],
+        [['value' => 'Salary balance = earned minus cash paid; advances are shown separately.', 'type' => 'string']],
+        [['value' => 'Outstanding advances and savings are balances as of ' . $month_end . '. Active workers only.', 'type' => 'string']],
+        [],
+        array_map(static fn($label) => ['value' => $label, 'type' => 'string', 'style' => 3], $headers),
+    ];
+    foreach ($summary_rows as $index => $row) {
+        $cells = [['value' => $index + 1, 'type' => 'number'], ['value' => $row['name'], 'type' => 'string']];
+        foreach ($fields as $field) {
+            $cells[] = ['value' => $row[$field], 'type' => 'number', 'style' => 4];
+        }
+        $exportRows[] = $cells;
+    }
+    if (!$summary_rows) {
+        $exportRows[] = [['value' => 'No active workers found.', 'type' => 'string']];
+    }
+    $totalCells = [['value' => 'Total', 'style' => 2], ['value' => '', 'style' => 2]];
+    foreach ($fields as $field) {
+        $totalCells[] = ['value' => $totals[$field], 'type' => 'number', 'style' => 5];
+    }
+    $exportRows[] = $totalCells;
+    SimpleXlsx::download('Win_POS_Labour_Monthly_Report_' . $month . '.xlsx', [[
+        'name' => 'Labour monthly report',
+        'rows' => $exportRows,
+        'widths' => [7, 30, 18, 18, 20, 18, 18, 20, 20, 18],
+        'merges' => ['A1:J1', 'A2:J2', 'A3:J3', 'A4:J4'],
+    ]]);
+    exit;
+}
+
 include '../../includes/header.php';
 include '../../includes/sidebar.php';
 
@@ -197,6 +237,12 @@ include '../../includes/sidebar.php';
                 <button class="btn btn-primary" type="submit">
                     <i class="fa fa-search"></i>
                     View month
+                </button>
+            </div>
+            <div class="col-sm-auto">
+                <button class="btn btn-success" type="submit" formaction="export_excel.php">
+                    <i class="fa fa-file-excel"></i>
+                    Export Excel
                 </button>
             </div>
         </form>
